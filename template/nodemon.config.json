@@ -1,0 +1,4 @@
+{
+  "ignore": [".git", "*.log", "routes/**", "test/**", "node_modules"],
+  "ext": "js,json,yaml"
+}
