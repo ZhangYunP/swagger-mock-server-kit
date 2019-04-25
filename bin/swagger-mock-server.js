@@ -6,6 +6,10 @@ program.version(version);
 
 program
   .command("create [projectName]", "create a mock server project")
+  .option("-y, --yarn", "use yarn")
   .action(create);
 
-program.command("start", "start mock server").action(start);
+program
+  .command("start [cwd]", "start mock server")
+  .option("-o, --open [url]", "open browser in url")
+  .action(start);
