@@ -10,6 +10,7 @@ const {
 } = require("../config");
 
 const clean = util.promisify(rimraf)
+const execute = util.promisify(spawn)
 
 let spawnCmd
 
@@ -27,6 +28,8 @@ function create(projectName = "swagger-mock-server", options) {
 
     const sourceDir = path.join(root, "template");
 
+    console.log('template path is: ' + sourceDir, ", and will copy to " + distDir)
+
     if (!fs.existsSync(sourceDir)) {
       throw new Error("source dir must be exists");
     }
@@ -35,11 +38,13 @@ function create(projectName = "swagger-mock-server", options) {
     } catch (e) {
       throw e;
     }
+
+    console.log('copy succeed!')
     await installDeps(options, distDir);
   })()
 }
 
-async function installDeps(options, cwd) {
+async function installDeps(options, cwd = process.cwd()) {
   if (options.yarn) {
     spawnCmd = "yarn";
   } else {
@@ -48,7 +53,7 @@ async function installDeps(options, cwd) {
   try {
     var spinner = ora('now install dependences , please wait...').start()
 
-    await spawn(spawnCmd, ["install"], {
+    await execute(spawnCmd, ["install"], {
       cwd
     });
 
