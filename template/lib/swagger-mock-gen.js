@@ -177,12 +177,12 @@ class MockRouter {
   findResponseSchema(res) {
     for (var item in res) {
       if (item === 'schema') return res[item]
-      if (res[item] && typeof res[item] === 'object') return this.findSchema(res[item])
+      if (res[item] && typeof res[item] === 'object') return this.findResponseSchema(res[item])
     }
   }
 
   createExample(schema) {
-    const example = {}
+    let example
     switch (schema.type) {
       case 'array':
         this.generateArrayItem(schema, example)
@@ -199,6 +199,18 @@ class MockRouter {
       items
     } = schmea
     createExample(items)
+  }
+
+  generateObject(schema, example) {
+
+  }
+
+  generateString(schema, example) {
+
+  }
+
+  generagteNumber(schema, example) {
+
   }
 
   generateTemplate(pathinfo) {
