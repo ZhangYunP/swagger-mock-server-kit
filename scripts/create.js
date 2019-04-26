@@ -1,39 +1,54 @@
 const fs = require("fs-extra");
 const path = require("path");
 const spawn = require("cross-spawn");
-const ora = requir('ora')
+const ora = require('ora')
+const rimraf = require('rimraf')
+const util = require("util")
+
 const {
   root
 } = require("../config");
 
+const clean = util.promisify(rimraf)
+
 let spawnCmd
 
 function create(projectName = "swagger-mock-server", options) {
-  const distDir = path.join(process.cwd(), projectName);
-  console.log('distDir is: ', distDir)
-  if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
-  const sourceDir = path.join(root, "template");
-  if (!fs.existsSync(sourceDir)) {
-    throw new Error("source dir must be exists");
-  }
-  try {
-    fs.copySync(sourceDir, distDir);
-  } catch (e) {
-    throw e;
-  }
-  installDeps(options, distDir);
+  (async () => {
+    console.log("projectName: ", projectName)
+    console.log("useYarn: ", options.yarn)
+
+    const distDir = path.join(process.cwd(), projectName);
+    if (fs.existsSync(distDir)) {
+      await clean(distDir)
+      console.log('delete distDir succeed')
+    }
+    fs.mkdirSync(distDir);
+
+    const sourceDir = path.join(root, "template");
+
+    if (!fs.existsSync(sourceDir)) {
+      throw new Error("source dir must be exists");
+    }
+    try {
+      await fs.copy(sourceDir, distDir);
+    } catch (e) {
+      throw e;
+    }
+    await installDeps(options, distDir);
+  })()
 }
 
-function installDeps(options, cwd) {
+async function installDeps(options, cwd) {
   if (options.yarn) {
     spawnCmd = "yarn";
   } else {
     spawnCmd = "npm";
   }
   try {
-    const spinner = ora('now install dependences , please wait...').start()
+    var spinner = ora('now install dependences , please wait...').start()
 
-    const child = spawn.sync(spawnCmd, ["install"], {
+    await spawn(spawnCmd, ["install"], {
       cwd
     });
 

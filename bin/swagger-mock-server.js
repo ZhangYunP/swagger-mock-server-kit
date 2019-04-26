@@ -10,12 +10,14 @@ const {
 program.version(version);
 
 program
-  .command("create [projectName]", "create a mock server project")
+  .command("create [projectName]")
+  .description("create a mock server project")
   .option("-y, --yarn", "use yarn")
   .action(create);
 
 program
-  .command("start [cwd]", "start mock server")
+  .command("start [cwd]")
+  .description("start mock server")
   .option("-o, --open [url]", "open browser in url")
   .action(start);
 
