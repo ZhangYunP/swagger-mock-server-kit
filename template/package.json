@@ -3,11 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "description": "this is module that create a mock server by swagger doc",
-  "keywords": ["swagger", "mock data"],
+  "keywords": [
+    "swagger",
+    "mock data"
+  ],
   "author": "zypolo",
   "license": "MIT",
   "main": "start.js",
   "dependencies": {
+    "chalk": "^2.4.2",
     "cors": "^2.8.5",
     "express": "^4.12.3",
     "http-proxy-middleware": "^0.19.1",

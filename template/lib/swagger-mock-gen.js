@@ -3,6 +3,16 @@ const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
 
+const {
+  appRoot
+} = require('../config/config')
+
+const {
+  success,
+  error: elog,
+  warning: wlog
+} = require('./utils')
+
 class MockRouter {
   constructor(opts = {}) {
     this.opts = this.formatopts(opts);
@@ -28,7 +38,7 @@ class MockRouter {
 
   formatopts(opts) {
     if (!opts.url) throw new Error("opts.url is required");
-    opts.output = opts.output || path.join(__dirname, "routes");
+    opts.output = opts.output || path.join(appRoot, "routes");
     opts.filename = opts.filename || "mockRoutes.js";
     opts.blackList = opts.blackList || [];
     opts.baseUrl = opts.baseUrl || "/api";
@@ -38,42 +48,53 @@ class MockRouter {
   async validateDoc(swayOpts) {
     try {
       const api = await sway.create(swayOpts);
-      const { errors, warnings } = await api.validate();
+      const {
+        errors,
+        warnings
+      } = await api.validate();
       if (errors.length) {
         errors.forEach(error => {
-          const { code, path, message } = error;
-          path = "#/" + path.join("");
-          console.log(
+          let {
+            code,
+            path,
+            message
+          } = error;
+          path = "#/" + this.tojsonPointer(path);
+          elog(
             "apidoc error occurr at " +
-              path +
-              ", errcode: " +
-              code +
-              ", errormessage: " +
-              message
+            path +
+            ", errcode: " +
+            code +
+            ", errormessage: " +
+            message
           );
         });
-        console.log("errors number: " + errors.length);
-        throw new Error("invalidate api doc!");
+        elog("errors number: " + errors.length);
+        return false
       }
 
       if (warnings.length) {
-        warnings.forEach(error => {
-          const { code, path, message } = error;
-          path = "#/" + path.join("");
-          console.log(
+        warnings.forEach(warning => {
+          const {
+            code,
+            path,
+            message
+          } = warning;
+          path = "#/" + this.tojsonPointer(path);
+          wlog(
             "apidoc warning occurr at " +
-              path +
-              ", errcode: " +
-              code +
-              ", errormessage: " +
-              message
+            path +
+            ", errcode: " +
+            code +
+            ", errormessage: " +
+            message
           );
         });
-        console.log("warnings number: " + warnings.length);
+        wlog("warnings number: " + warnings.length);
       }
 
       if (!errors.length && !warnings.length) {
-        console.log("validate results: errors 0, warnings 0");
+        success("validate results: errors 0, warnings 0");
       }
       this.api = api;
       return true;
@@ -83,18 +104,23 @@ class MockRouter {
     }
   }
 
+  tojsonPointer(path) {
+    return path.map(part => {
+      return part.replace(/\//, '~|')
+    }).join('/')
+  }
+
   async init(app) {
     try {
       const isValidate = await this.validateDoc({
         definition: this.url
       });
 
-      if (false) {
+      if (!isValidate) {
         throw new Error("invalid doc file");
       }
       const paths = await this.parseDoc();
-      console.log(paths);
-      return;
+
       const pathinfo = this.extractPathInfo(paths);
 
       const template = this.generateTemplate(pathinfo);
@@ -104,7 +130,7 @@ class MockRouter {
 
         this.setup(app, err => {
           if (err) throw err;
-          console.log("register mockdata router success");
+          success("register mockdata router success");
         });
       });
     } catch (e) {
@@ -114,8 +140,9 @@ class MockRouter {
 
   async parseDoc() {
     try {
-      var paths = this.api.getPaths();
-      // var paths = parser(this.url);
+      var {
+        paths
+      } = await parser(this.url);
     } catch (e) {
       throw e;
     }
@@ -129,29 +156,60 @@ class MockRouter {
       if (~this.blackList.indexOf(path)) return;
 
       Object.keys(paths[path]).forEach(method => {
-        const { responses } = paths[path][method];
-        if (!responses["200"]) return;
-
         const {
-          example = {
-            foo: "bar"
-          }
-        } = responses["200"];
+          responses
+        } = paths[path][method];
+        if (responses && !responses["200"]) return;
+
+        const schema = this.findResponseSchema(responses['200'])
+        const example = this.createExample(schema)
+
+        console.log(responses['200'])
         pathinfo.push({
           path,
-          method,
-          example
+          method
         });
       });
     });
     return pathinfo;
   }
 
+  findResponseSchema(res) {
+    for (var item in res) {
+      if (item === 'schema') return res[item]
+      if (res[item] && typeof res[item] === 'object') return this.findSchema(res[item])
+    }
+  }
+
+  createExample(schema) {
+    const example = {}
+    switch (schema.type) {
+      case 'array':
+        this.generateArrayItem(schema, example)
+    }
+
+    return example
+  }
+
+  generateArrayItem(schema, example) {
+    let max = schema['x-swagger-maxItems'] ? schema['x-swagger-maxItems'] : 5
+    let min = schema['x-swagger-minItems'] ? schema['x-swagger-minItems'] : 1
+    const count = Math.max(min, Math.floor(Math.random() * max))
+    const {
+      items
+    } = schmea
+    createExample(items)
+  }
+
   generateTemplate(pathinfo) {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({ path, method, example }) => {
+    pathinfo.forEach(({
+      path,
+      method,
+      example
+    }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
