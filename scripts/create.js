@@ -1,11 +1,16 @@
 const fs = require("fs-extra");
 const path = require("path");
-const { root } = require("../config");
 const spawn = require("cross-spawn");
+const ora = requir('ora')
+const {
+  root
+} = require("../config");
+
+let spawnCmd
 
 function create(projectName = "swagger-mock-server", options) {
-  let command;
   const distDir = path.join(process.cwd(), projectName);
+  console.log('distDir is: ', distDir)
   if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
   const sourceDir = path.join(root, "template");
   if (!fs.existsSync(sourceDir)) {
@@ -21,17 +26,23 @@ function create(projectName = "swagger-mock-server", options) {
 
 function installDeps(options, cwd) {
   if (options.yarn) {
-    command = "yarn";
+    spawnCmd = "yarn";
   } else {
-    command = "npm";
+    spawnCmd = "npm";
   }
   try {
-    const child = spawn.sync(command, ["install"], {
+    const spinner = ora('now install dependences , please wait...').start()
+
+    const child = spawn.sync(spawnCmd, ["install"], {
       cwd
     });
+
+    spinner.stop()
   } catch (e) {
+    spinner.fail('project dependences install failed')
     throw e;
   }
+  spinner.succeed('project dependences install succeed!')
   console.log("create project sucess");
   process.exit(0);
 }

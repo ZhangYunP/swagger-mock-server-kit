@@ -1,6 +1,11 @@
 const program = require("commander");
-const { version } = require("package.json");
-const { create, start } = require("../scripts/index");
+const {
+  version
+} = require("../package.json");
+const {
+  create,
+  start
+} = require("../scripts");
 
 program.version(version);
 
@@ -13,3 +18,6 @@ program
   .command("start [cwd]", "start mock server")
   .option("-o, --open [url]", "open browser in url")
   .action(start);
+
+program
+  .parse(process.argv)

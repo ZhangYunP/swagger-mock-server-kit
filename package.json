@@ -21,6 +21,7 @@
     "fs-extra": "^7.0.1",
     "http-proxy-middleware": "^0.19.1",
     "mockjs": "^1.0.1-beta3",
+    "ora": "^3.4.0",
     "swagger-parser-mock": "^1.1.2",
     "swagger-ui-express": "^4.0.2",
     "sway": "^2.0.6",
