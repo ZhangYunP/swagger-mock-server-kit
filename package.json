@@ -1,7 +1,6 @@
 {
   "name": "swagger-mock-server-kit",
   "version": "0.0.1",
-  "private": true,
   "description": "this is module that create a mock server by swagger doc",
   "keywords": [
     "swagger",
@@ -15,17 +14,9 @@
   },
   "dependencies": {
     "commander": "^2.20.0",
-    "cors": "^2.8.5",
     "cross-spawn": "^6.0.5",
-    "express": "^4.16.4",
     "fs-extra": "^7.0.1",
-    "http-proxy-middleware": "^0.19.1",
-    "mockjs": "^1.0.1-beta3",
     "ora": "^3.4.0",
-    "rimraf": "^2.6.3",
-    "swagger-parser-mock": "^1.1.2",
-    "swagger-ui-express": "^4.0.2",
-    "sway": "^2.0.6",
-    "yamljs": "^0.3.0"
+    "rimraf": "^2.6.3"
   }
 }
