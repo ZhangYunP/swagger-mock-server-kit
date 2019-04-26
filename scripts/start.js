@@ -1,19 +1,13 @@
 const spawn = require("cross-spawn");
-const open = require("../lib/open");
 
 module.exports = function start(cwd, options) {
+  console.log('run start command')
   try {
     const child = spawn.sync("npm", ["start"], {
-      cwd: cwd ? cwd : process.cwd()
+      cwd: cwd ? cwd : process.cwd(),
+      stdio: 'inherit'
     });
   } catch (e) {
     throw e;
   }
-  if (options.open) {
-    open(options.open, err => {
-      console.log("open browser!");
-    });
-  }
-  console.log("start mock server sucess!");
-  process.exit(1);
 };

@@ -15,8 +15,7 @@ let spawnCmd
 
 function create(projectName = "swagger-mock-server", options) {
   (async () => {
-    console.log("projectName: ", projectName)
-    console.log("useYarn: ", options.yarn)
+    console.log("execute create command, and projectName: " + projectName + ', useYarn: ' + options.yarn)
 
     const distDir = path.join(process.cwd(), projectName);
     if (fs.existsSync(distDir)) {
