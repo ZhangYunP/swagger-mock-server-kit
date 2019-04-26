@@ -1,16 +1,15 @@
 const fs = require("fs-extra");
 const path = require("path");
-const spawn = require("cross-spawn");
 const ora = require('ora')
 const rimraf = require('rimraf')
 const util = require("util")
+const asyncSpawn = require('../lib/async-spawn')
 
 const {
   root
 } = require("../config");
 
 const clean = util.promisify(rimraf)
-const execute = util.promisify(spawn)
 
 let spawnCmd
 
@@ -53,17 +52,18 @@ async function installDeps(options, cwd = process.cwd()) {
   try {
     var spinner = ora('now install dependences , please wait...').start()
 
-    await execute(spawnCmd, ["install"], {
+    await asyncSpawn('installDeps', spawnCmd, ["install"], {
       cwd
     });
 
     spinner.stop()
   } catch (e) {
     spinner.fail('project dependences install failed')
+    console.log(e)
     throw e;
   }
   spinner.succeed('project dependences install succeed!')
-  console.log("create project sucess");
+  console.log("create project sucess!");
   process.exit(0);
 }
 
