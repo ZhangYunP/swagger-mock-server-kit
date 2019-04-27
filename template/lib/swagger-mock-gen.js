@@ -2,10 +2,15 @@ const fs = require("fs");
 const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
+const validateRquest = require("../middlewares/validate-req");
 
 const { appRoot } = require("../config/config");
 
 const { success, error: elog, warning: wlog } = require("./utils");
+
+const registerValidateMiddleWare = (app, api, baseUrl) => {
+  app.use(baseUrl, validateRquest(api));
+};
 
 class MockRouter {
   constructor(opts = {}) {
@@ -109,6 +114,9 @@ class MockRouter {
       if (!isValidate) {
         throw new Error("invalid doc file");
       }
+
+      registerValidateMiddleWare(app, this.api, this.baseUrl);
+
       const paths = await this.parseDoc();
 
       const pathinfo = this.extractPathInfo(paths);
