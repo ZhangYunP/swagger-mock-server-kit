@@ -112,7 +112,7 @@ class MockRouter {
         const { responses } = paths[path][method];
         if (responses && !responses["200"]) return;
 
-        // console.log(responses["200"]);
+        console.log(paths);
         const { example } = responses["200"];
         pathinfo.push({
           path,
