@@ -5,9 +5,10 @@ const {
   formatResultMessage
 } = require("../lib/utils");
 
-module.exports = (api, opts = {}) => {
+module.exports = (api, opts = {}, app) => {
+  const operation = api.getOperation();
+
   return (req, res, next) => {
-    const operation = api.getOperation();
     const results = operation.validateRequest(req, opts);
     success(
       "[request]  ",
@@ -28,8 +29,8 @@ module.exports = (api, opts = {}) => {
       ""
     );
     if (results.errors.length === 0) return next();
-    res.status(400).json({
-      code: 400,
+    res.status(40001).json({
+      code: 40001,
       message: "invalidate request"
     });
   };

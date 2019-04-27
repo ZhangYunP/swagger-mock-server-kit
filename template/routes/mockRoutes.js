@@ -1,10 +1,15 @@
 
       const Mock = require('mockjs')
 
-      module.exports = app => {
+      module.exports = (app, api) => {
+        const operation = api.getOperation();
     
          app.get('/api/v1/users', (req, res) => {
-           res.json(Mock.mock([
+          
+        const results = operation.validateRequest(res);
+    
+        if (!results.errors.length && !results.warnings.length) {
+          res.json(Mock.mock([
   {
     "id": "@integer(60, 100)",
     "name": "@string",
@@ -19,13 +24,13 @@
     "isValidate": "@boolean"
   }
 ]));
+        } else {
+          res.json({
+            code: 40002,
+            message: "invalidate response"
+          })
+        }
          })
        
-        app.get('/api/foo', (req, res) => {
-          res.json({
-            bar: 'baz'
-          })
-        })
-    
       }
     

@@ -2,7 +2,7 @@ const fs = require("fs");
 const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
-const validateRquest = require("../middlewares/validate-req");
+const validateRquest = require("../middlewares/validate-http");
 
 const { appRoot } = require("../config/config.default");
 
@@ -23,14 +23,8 @@ class MockRouter {
     this.modStart = `
       const Mock = require('mockjs')
 
-      module.exports = app => {
-    `;
-    this.hookRoute = `
-        app.get('/api/foo', (req, res) => {
-          res.json({
-            bar: 'baz'
-          })
-        })
+      module.exports = (app, api) => {
+        const operation = api.getOperation();
     `;
     this.modEnd = `
       }
@@ -140,11 +134,21 @@ class MockRouter {
         /\{([^}]*)\}/g,
         ":$1"
       )}', (req, res) => {
-           res.json(Mock.mock(${example}));
+          
+        const results = operation.validateRequest(res);
+    
+        if (!results.errors.length && !results.warnings.length) {
+          res.json(Mock.mock(${example}));
+        } else {
+          res.json({
+            code: 40002,
+            message: "invalidate response"
+          })
+        }
          })
        `;
     });
-    template += this.hookRoute;
+
     template += this.modEnd;
 
     return template;
@@ -164,7 +168,7 @@ class MockRouter {
       cb(new Error("not found mockroute in dist"));
     }
     const registerRoute = require(this.dist);
-    registerRoute(app);
+    registerRoute(app, this.api);
     cb(null);
   }
 }
