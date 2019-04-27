@@ -16,7 +16,7 @@ const baseconfig = formatConfig(config);
 const { appRoot, docFilename, docUIPath } = baseconfig;
 
 const swaggerDocument = getSwaggerDocument(docFilename);
-const { port, baseUrl } = findServerConfig(swaggerDocument);
+const { port, baseUrl, consumes } = findServerConfig(swaggerDocument);
 
 const docRelative = path.relative(appRoot, docFilename);
 const docPath = docRelative.replace(/\\/, "/");
@@ -24,7 +24,7 @@ const docPath = docRelative.replace(/\\/, "/");
 const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
 
 const app = express();
-setupNeededMiddleware(app, { path: appRoot });
+setupNeededMiddleware(app, { path: appRoot, consumes });
 
 const mockRouter = new MockRouter({
   url: swaggerDocUlr,

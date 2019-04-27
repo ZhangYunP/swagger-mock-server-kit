@@ -72,7 +72,7 @@ formatResultMessage = ({ errors, warnings }, log) => {
   }
 };
 
-const findServerConfig = ({ host = "", basePath = "/api/v1" }) => {
+const findServerConfig = ({ host = "", basePath = "/api/v1", consumes }) => {
   let port;
   const parts = host.split(":");
   if (parts[1]) {
@@ -82,7 +82,8 @@ const findServerConfig = ({ host = "", basePath = "/api/v1" }) => {
   }
   return {
     port,
-    baseUrl: basePath
+    baseUrl: basePath,
+    consumes
   };
 };
 
@@ -101,9 +102,14 @@ const setParseForm = app => {
 };
 
 const setupNeededMiddleware = (app, opts) => {
+  opts.consumes.forEach(mime => {
+    if (mime.indexOf("urlencoded")) {
+      setParseBody(app);
+    } else if (mime.indexOf("form-data")) {
+      setParseForm(app);
+    }
+  });
   setStaticPath(app, opts.path);
-  setParseBody(app);
-  setParseForm(app);
 };
 
 const installMiddleware = (app, config) => {
