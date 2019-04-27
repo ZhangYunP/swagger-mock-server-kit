@@ -4,12 +4,17 @@ const path = require("path");
 const sway = require("sway");
 const validateRquest = require("../middlewares/validate-req");
 
-const { appRoot } = require("../config/config");
+const { appRoot } = require("../config/config.default");
 
-const { success, error: elog, warning: wlog } = require("./utils");
+const {
+  success,
+  error: elog,
+  warning,
+  formatResultMessage
+} = require("./utils");
 
 const registerValidateMiddleWare = (app, api, baseUrl) => {
-  app.use(baseUrl, validateRquest(api));
+  app.use(baseUrl, validateRquest(api, { strictMode: false }));
 };
 
 class MockRouter {
@@ -47,62 +52,19 @@ class MockRouter {
   async validateDoc(swayOpts) {
     try {
       const api = await sway.create(swayOpts);
-      const { errors, warnings } = await api.validate();
-      if (errors.length) {
-        errors.forEach(error => {
-          let { code, path, message } = error;
-          path = "#/" + this.tojsonPointer(path);
-          elog(
-            "error: ",
-            "apidoc error occurr at " +
-              path +
-              ", errcode: " +
-              code +
-              ", errormessage: " +
-              message
-          );
-        });
-        elog("error: ", "errors number: " + errors.length);
-        return false;
-      }
-
-      if (warnings.length) {
-        warnings.forEach(warning => {
-          const { code, path, message } = warning;
-          path = "#/" + this.tojsonPointer(path);
-          wlog(
-            "warning: ",
-            "apidoc warning occurr at " +
-              path +
-              ", errcode: " +
-              code +
-              ", errormessage: " +
-              message
-          );
-        });
-        wlog("warning: ", "warnings number: " + warnings.length);
-      }
-
-      if (!errors.length && !warnings.length) {
-        success(
-          "[info]  ",
-          "validate swagger doc, results: errors 0, warnings 0"
-        );
-      }
+      const results = await api.validate();
+      formatResultMessage(results, {
+        success,
+        elog,
+        warning
+      });
+      if (results.errors.length > 0) return false;
       this.api = api;
       return true;
     } catch (e) {
       elog("error: ", e);
       return false;
     }
-  }
-
-  tojsonPointer(path) {
-    return path
-      .map(part => {
-        return part.replace(/\//, "~|");
-      })
-      .join("/");
   }
 
   async init(app) {
@@ -156,7 +118,7 @@ class MockRouter {
         const { responses } = paths[path][method];
         if (responses && !responses["200"]) return;
 
-        console.log(responses["200"]);
+        // console.log(responses["200"]);
         const { example } = responses["200"];
         pathinfo.push({
           path,

@@ -1,11 +1,12 @@
 const path = require("path");
 const express = require("express");
 const MockRouter = require("./lib/swagger-mock-gen");
-const config = require("./config/config");
+const config = require("./config");
 const {
   formatConfig,
   getSwaggerDocument,
   findServerConfig,
+  setupNeededMiddleware,
   success: slog,
   error: elog,
   installMiddleware
@@ -23,21 +24,25 @@ const docPath = docRelative.replace(/\\/, "/");
 const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
 
 const app = express();
+setupNeededMiddleware(app, { path: appRoot });
+
 const mockRouter = new MockRouter({
   url: swaggerDocUlr,
   baseUrl
 });
 
-installMiddleware(app, {
-  ...baseconfig,
-  swaggerDocUlr,
-  baseUrl
-});
-
 app.listen(port, async err => {
   if (err) elog("error: ", err);
-  slog("[info]  ", "register mockdate router by swagger.yaml");
+  slog("[info]  ", "register mockdate router by " + docPath);
+
   await mockRouter.init(app);
+
+  installMiddleware(app, {
+    ...baseconfig,
+    swaggerDocUlr,
+    baseUrl
+  });
+
   slog(
     "[info]  ",
     `mock server is starting at ${port}, you can get mock data on ${baseUrl}`
