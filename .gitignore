@@ -2,5 +2,6 @@
 **/npm-debug.log
 
 .vscode/
+template/routes
 
 .DS_Store
