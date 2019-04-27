@@ -16,10 +16,12 @@ function create(projectName = "swagger-mock-server", options) {
   (async () => {
     log.success(
       "[info]  ",
-      "execute create command, and projectName: " +
+      "execute create command, [projectName]: " +
         projectName +
-        ", useYarn: " +
+        ", [--yarn]: " +
         options.yarn
+        ? options.yarn
+        : "false"
     );
 
     const distDir = path.join(process.cwd(), projectName);
@@ -33,8 +35,7 @@ function create(projectName = "swagger-mock-server", options) {
 
     log.success(
       "[info]  ",
-      "template path is: " + sourceDir,
-      ", and will copy to " + distDir
+      "template path is: " + sourceDird + ", and will copy to " + distDir
     );
 
     if (!fs.existsSync(sourceDir)) {
@@ -46,7 +47,7 @@ function create(projectName = "swagger-mock-server", options) {
       throw e;
     }
 
-    log.success("[info]  ", "copy succeed!");
+    log.success("[info]  ", "copy template to distDir succeed!");
     await installDeps(options, distDir);
   })();
 }
