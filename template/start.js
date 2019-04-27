@@ -13,7 +13,7 @@ const {
 } = require("./lib/utils");
 
 const baseconfig = formatConfig(config);
-const { appRoot, docFilename, docUIPath } = baseconfig;
+const { appRoot, docFilename, docUIPath, plugins } = baseconfig;
 
 const swaggerDocument = getSwaggerDocument(docFilename);
 const { port, baseUrl, consumes } = findServerConfig(swaggerDocument);
@@ -28,7 +28,9 @@ setupNeededMiddleware(app, { path: appRoot, consumes });
 
 const mockRouter = new MockRouter({
   url: swaggerDocUlr,
-  baseUrl
+  baseUrl,
+  appRoot,
+  plugins
 });
 
 app.listen(port, async err => {

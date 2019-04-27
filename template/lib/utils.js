@@ -21,6 +21,7 @@ const formatConfig = (config = {}) => {
     config.docFilename = path.resolve(config.appRoot, config.docFilename);
   }
   config.docUIPath = config.docUIPath || "/api-docs";
+  config.plugins = config.plugins || [];
   return config;
 };
 

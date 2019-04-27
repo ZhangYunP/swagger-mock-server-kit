@@ -4,8 +4,6 @@ const path = require("path");
 const sway = require("sway");
 const validateRquest = require("../middlewares/validate-http");
 
-const { appRoot } = require("../config/config.default");
-
 const {
   success,
   error: elog,
@@ -36,7 +34,8 @@ class MockRouter {
 
   formatopts(opts) {
     if (!opts.url) throw new Error("opts.url is required");
-    opts.output = opts.output || path.join(appRoot, "routes");
+    opts.output =
+      opts.output || path.join(opts.appRoot || process.cwd(), "routes");
     opts.filename = opts.filename || "mockRoutes.js";
     opts.blackList = opts.blackList || [];
     opts.baseUrl = opts.baseUrl || "/api";
