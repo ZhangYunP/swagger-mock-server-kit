@@ -1,11 +1,8 @@
-const chalk = require('chalk')
+const chalk = require("chalk");
 
-const log = console.log
+const log = console.log;
 
-const findServerConfig = ({
-  host = "",
-  basePath = "/api/v1"
-}) => {
+const findServerConfig = ({ host = "", basePath = "/api/v1" }) => {
   let port;
   const parts = host.split(":");
   if (parts[1]) {
@@ -19,11 +16,11 @@ const findServerConfig = ({
   };
 };
 
-const error = (string) => void log(chalk.red(string))
+const error = (string, metadata) => void log(chalk.red(string), metadata);
 
-const success = (string) => void log(chalk.green(string))
+const success = (string, metadata) => void log(chalk.green(string), metadata);
 
-const warning = (string) => void log(chalk.yellow(string))
+const warning = (string, metadata) => void log(chalk.yellow(string), metadata);
 
 module.exports = {
   findServerConfig,

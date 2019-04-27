@@ -6,7 +6,8 @@ const proxy = require("http-proxy-middleware");
 const MockRouter = require("./lib/swagger-mock-gen");
 const errHandler = require("./middlewares/error-handler");
 const config = require("./config/config");
-const { findServerConfig } = require("./lib/utils");
+const { findServerConfig, success: slog, error: elog } = require("./lib/utils");
+
 const {
   appRoot,
   docFilename = "swagger.yaml",
@@ -45,30 +46,30 @@ if (config.proxyConfig) {
   app.use(baseUrl, proxy(proxyConfig));
 }
 app.use(errHandler);
+app.use(
+  docUIPath,
+  swaggerUi.serve,
+  swaggerUi.setup(null, {
+    swaggerUrl: swaggerDocUlr
+  })
+);
 
 app.listen(port, async err => {
-  if (err) console.log(err);
-  console.log("register mockdate router by swagger.yaml");
+  if (err) elog("error: ", err);
+  slog("register mockdate router by swagger.yaml");
   await mockRouter.init(app);
-  console.log(
+  slog(
     `mock server is starting at ${port}, you can get mock data on ${baseUrl}`
   );
-  app.use(
-    docUIPath,
-    swaggerUi.serve,
-    swaggerUi.setup(null, {
-      swaggerUrl: swaggerDocUlr
-    })
-  );
-  console.log("swagger ui doc url is: http://localhost:" + port + docUIPath);
+  slog("swagger ui doc url is: http://localhost:" + port + docUIPath);
 });
 
 process.on("unhandledRejection", err => {
-  console.log(err);
+  elog("error: ", err);
   process.exit(1);
 });
 
 process.on("uncaughtException", err => {
-  console.log(err);
+  elog("error: ", err);
   process.exit(1);
 });

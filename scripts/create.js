@@ -1,32 +1,41 @@
 const fs = require("fs-extra");
 const path = require("path");
-const ora = require('ora')
-const rimraf = require('rimraf')
-const util = require("util")
-const asyncSpawn = require('../lib/async-spawn')
+const ora = require("ora");
+const rimraf = require("rimraf");
+const util = require("util");
+const asyncSpawn = require("../lib/async-spawn");
+const log = require("../lib/log");
 
-const {
-  root
-} = require("../config");
+const { root } = require("../config");
 
-const clean = util.promisify(rimraf)
+const clean = util.promisify(rimraf);
 
-let spawnCmd
+let spawnCmd;
 
 function create(projectName = "swagger-mock-server", options) {
   (async () => {
-    console.log("execute create command, and projectName: " + projectName + ', useYarn: ' + options.yarn)
+    log.success(
+      "[info]  ",
+      "execute create command, and projectName: " +
+        projectName +
+        ", useYarn: " +
+        options.yarn
+    );
 
     const distDir = path.join(process.cwd(), projectName);
     if (fs.existsSync(distDir)) {
-      await clean(distDir)
-      console.log('delete distDir succeed')
+      await clean(distDir);
+      log.success("[info]  ", "delete distDir succeed");
     }
     fs.mkdirSync(distDir);
 
     const sourceDir = path.join(root, "template");
 
-    console.log('template path is: ' + sourceDir, ", and will copy to " + distDir)
+    log.success(
+      "[info]  ",
+      "template path is: " + sourceDir,
+      ", and will copy to " + distDir
+    );
 
     if (!fs.existsSync(sourceDir)) {
       throw new Error("source dir must be exists");
@@ -37,9 +46,9 @@ function create(projectName = "swagger-mock-server", options) {
       throw e;
     }
 
-    console.log('copy succeed!')
+    log.success("[info]  ", "copy succeed!");
     await installDeps(options, distDir);
-  })()
+  })();
 }
 
 async function installDeps(options, cwd = process.cwd()) {
@@ -49,20 +58,20 @@ async function installDeps(options, cwd = process.cwd()) {
     spawnCmd = "npm";
   }
   try {
-    var spinner = ora('now install dependences , please wait...').start()
+    var spinner = ora("now install dependences , please wait...").start();
 
-    await asyncSpawn('installDeps', spawnCmd, ["install"], {
+    await asyncSpawn("installDeps", spawnCmd, ["install"], {
       cwd
     });
 
-    spinner.stop()
+    spinner.stop();
   } catch (e) {
-    spinner.fail('project dependences install failed')
-    console.log(e)
+    spinner.fail("project dependences install failed");
+    log.error("error: ", e);
     throw e;
   }
-  spinner.succeed('project dependences install succeed!')
-  console.log("create project sucess!");
+  spinner.succeed("project dependences install succeed!");
+  log.success("[info]  ", "create project sucess!");
   process.exit(0);
 }
 
