@@ -1,37 +1,25 @@
 const path = require("path");
 const express = require("express");
-const swaggerUi = require("swagger-ui-express");
-const cors = require("cors");
-const proxy = require("http-proxy-middleware");
 const MockRouter = require("./lib/swagger-mock-gen");
-const errHandler = require("./middlewares/error-handler");
 const config = require("./config/config");
-const { findServerConfig, success: slog, error: elog } = require("./lib/utils");
-
 const {
-  appRoot,
-  docFilename = "swagger.yaml",
-  docUIPath = "/api-docs"
-} = config;
+  formatConfig,
+  getSwaggerDocument,
+  findServerConfig,
+  success: slog,
+  error: elog,
+  installMiddleware
+} = require("./lib/utils");
 
-if (!appRoot) {
-  throw new Error("appRoot is required");
-}
+const baseconfig = formatConfig(config);
+const { appRoot, docFilename, docUIPath } = baseconfig;
 
-const ext = path.extname(docFilename);
-let swaggerDocument;
-
-if (ext === ".yaml") {
-  const yaml = require("yamljs");
-  swaggerDocument = yaml.load(docFilename);
-} else {
-  swaggerDocument = require(docFilename);
-}
+const swaggerDocument = getSwaggerDocument(docFilename);
+const { port, baseUrl } = findServerConfig(swaggerDocument);
 
 const docRelative = path.relative(appRoot, docFilename);
 const docPath = docRelative.replace(/\\/, "/");
 
-const { port, baseUrl } = findServerConfig(swaggerDocument);
 const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
 
 const app = express();
@@ -40,19 +28,11 @@ const mockRouter = new MockRouter({
   baseUrl
 });
 
-app.use(express.static(path.join(__dirname, ".")));
-app.use(baseUrl, cors());
-if (config.proxyConfig) {
-  app.use(baseUrl, proxy(proxyConfig));
-}
-app.use(errHandler);
-app.use(
-  docUIPath,
-  swaggerUi.serve,
-  swaggerUi.setup(null, {
-    swaggerUrl: swaggerDocUlr
-  })
-);
+installMiddleware(app, {
+  ...baseconfig,
+  swaggerDocUlr,
+  baseUrl
+});
 
 app.listen(port, async err => {
   if (err) elog("error: ", err);
