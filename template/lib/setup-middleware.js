@@ -1,7 +1,15 @@
 const path = require("path");
 const fs = require("fs");
+const chalk = require("chalk");
+
+const error = (string, metadata) =>
+  void console.log(chalk.red(string), metadata);
+
+const success = (string, metadata) =>
+  void console.log(chalk.green(string), metadata);
 
 const setupOwnMiddleware = (app, middlewareDir) => {
+  let count = 0;
   if (!fs.existsSync(middlewareDir)) {
     throw new Error("middleware dir is requied");
   }
@@ -14,12 +22,17 @@ const setupOwnMiddleware = (app, middlewareDir) => {
       const midStat = fs.lstatSync(midPath);
       if (midStat.isFile()) {
         try {
-          const middleware = require(midPath);
-          if (typeof middleware == "function") {
-            app.use(middleware);
+          if (~file.indexOf("middleware")) {
+            const middleware = require(midPath);
+            if (typeof middleware == "function") {
+              app.use(middleware);
+              count++;
+              success("[info]  ", "setup own middleware succeed!");
+            }
           }
           return;
         } catch (e) {
+          error("error: ", e);
           throw e;
         }
       } else {
@@ -27,6 +40,7 @@ const setupOwnMiddleware = (app, middlewareDir) => {
       }
     });
   }
+  success("[info]  ", "own middleware number: " + count);
 };
 
 module.exports = setupOwnMiddleware;

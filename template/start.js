@@ -36,12 +36,16 @@ installMiddleware(app, {
 
 app.listen(port, async err => {
   if (err) elog("error: ", err);
-  slog("register mockdate router by swagger.yaml");
+  slog("[info]  ", "register mockdate router by swagger.yaml");
   await mockRouter.init(app);
   slog(
+    "[info]  ",
     `mock server is starting at ${port}, you can get mock data on ${baseUrl}`
   );
-  slog("swagger ui doc url is: http://localhost:" + port + docUIPath);
+  slog(
+    "[info]  ",
+    "swagger ui doc url is: http://localhost:" + port + docUIPath
+  );
 });
 
 process.on("unhandledRejection", err => {

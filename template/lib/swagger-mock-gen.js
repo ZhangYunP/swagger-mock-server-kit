@@ -48,6 +48,7 @@ class MockRouter {
           let { code, path, message } = error;
           path = "#/" + this.tojsonPointer(path);
           elog(
+            "error: ",
             "apidoc error occurr at " +
               path +
               ", errcode: " +
@@ -56,7 +57,7 @@ class MockRouter {
               message
           );
         });
-        elog("errors number: " + errors.length);
+        elog("error: ", "errors number: " + errors.length);
         return false;
       }
 
@@ -65,6 +66,7 @@ class MockRouter {
           const { code, path, message } = warning;
           path = "#/" + this.tojsonPointer(path);
           wlog(
+            "warning: ",
             "apidoc warning occurr at " +
               path +
               ", errcode: " +
@@ -73,16 +75,19 @@ class MockRouter {
               message
           );
         });
-        wlog("warnings number: " + warnings.length);
+        wlog("warning: ", "warnings number: " + warnings.length);
       }
 
       if (!errors.length && !warnings.length) {
-        success("validate results: errors 0, warnings 0");
+        success(
+          "[info]  ",
+          "validate swagger doc, results: errors 0, warnings 0"
+        );
       }
       this.api = api;
       return true;
     } catch (e) {
-      console.log(e);
+      elog("error: ", e);
       return false;
     }
   }
@@ -115,10 +120,11 @@ class MockRouter {
 
         this.setup(app, err => {
           if (err) throw err;
-          success("register mockdata router success");
+          success("[info]  ", "register mockdata router success");
         });
       });
     } catch (e) {
+      elog("error: ", e);
       throw e;
     }
   }
@@ -142,50 +148,17 @@ class MockRouter {
         const { responses } = paths[path][method];
         if (responses && !responses["200"]) return;
 
-        const schema = this.findResponseSchema(responses["200"]);
-        const example = this.createExample(schema);
-
         console.log(responses["200"]);
+        const { example } = responses["200"];
         pathinfo.push({
           path,
-          method
+          method,
+          example
         });
       });
     });
     return pathinfo;
   }
-
-  findResponseSchema(res) {
-    for (var item in res) {
-      if (item === "schema") return res[item];
-      if (res[item] && typeof res[item] === "object")
-        return this.findResponseSchema(res[item]);
-    }
-  }
-
-  createExample(schema) {
-    let example;
-    switch (schema.type) {
-      case "array":
-        this.generateArrayItem(schema, example);
-    }
-
-    return example;
-  }
-
-  generateArrayItem(schema, example) {
-    let max = schema["x-swagger-maxItems"] ? schema["x-swagger-maxItems"] : 5;
-    let min = schema["x-swagger-minItems"] ? schema["x-swagger-minItems"] : 1;
-    const count = Math.max(min, Math.floor(Math.random() * max));
-    const { items } = schema;
-    this.createExample(items);
-  }
-
-  generateObject(schema, example) {}
-
-  generateString(schema, example) {}
-
-  generagteNumber(schema, example) {}
 
   generateTemplate(pathinfo) {
     let template = "";
