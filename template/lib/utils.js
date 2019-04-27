@@ -1,9 +1,10 @@
+const express = require("express");
 const chalk = require("chalk");
-const fs = require("fs");
 const path = require("path");
 const swaggerUi = require("swagger-ui-express");
 const cors = require("cors");
 const proxy = require("http-proxy-middleware");
+const setupMiddleware = require("./setup-middleware");
 
 const log = console.log;
 
@@ -46,6 +47,10 @@ const installMiddleware = (app, config) => {
   if (config.proxyConfig) {
     app.use(config.baseUrl, proxy(config.proxyConfig));
   }
+  setupMiddleware(
+    app,
+    config.middlewareDir || path.join(config.appRoot, "middlewares")
+  );
 };
 
 const getSwaggerDocument = docFilename => {

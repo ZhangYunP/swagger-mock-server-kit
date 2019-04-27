@@ -3,15 +3,9 @@ const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
 
-const {
-  appRoot
-} = require('../config/config')
+const { appRoot } = require("../config/config");
 
-const {
-  success,
-  error: elog,
-  warning: wlog
-} = require('./utils')
+const { success, error: elog, warning: wlog } = require("./utils");
 
 class MockRouter {
   constructor(opts = {}) {
@@ -48,46 +42,35 @@ class MockRouter {
   async validateDoc(swayOpts) {
     try {
       const api = await sway.create(swayOpts);
-      const {
-        errors,
-        warnings
-      } = await api.validate();
+      const { errors, warnings } = await api.validate();
       if (errors.length) {
         errors.forEach(error => {
-          let {
-            code,
-            path,
-            message
-          } = error;
+          let { code, path, message } = error;
           path = "#/" + this.tojsonPointer(path);
           elog(
             "apidoc error occurr at " +
-            path +
-            ", errcode: " +
-            code +
-            ", errormessage: " +
-            message
+              path +
+              ", errcode: " +
+              code +
+              ", errormessage: " +
+              message
           );
         });
         elog("errors number: " + errors.length);
-        return false
+        return false;
       }
 
       if (warnings.length) {
         warnings.forEach(warning => {
-          const {
-            code,
-            path,
-            message
-          } = warning;
+          const { code, path, message } = warning;
           path = "#/" + this.tojsonPointer(path);
           wlog(
             "apidoc warning occurr at " +
-            path +
-            ", errcode: " +
-            code +
-            ", errormessage: " +
-            message
+              path +
+              ", errcode: " +
+              code +
+              ", errormessage: " +
+              message
           );
         });
         wlog("warnings number: " + warnings.length);
@@ -105,9 +88,11 @@ class MockRouter {
   }
 
   tojsonPointer(path) {
-    return path.map(part => {
-      return part.replace(/\//, '~|')
-    }).join('/')
+    return path
+      .map(part => {
+        return part.replace(/\//, "~|");
+      })
+      .join("/");
   }
 
   async init(app) {
@@ -140,9 +125,7 @@ class MockRouter {
 
   async parseDoc() {
     try {
-      var {
-        paths
-      } = await parser(this.url);
+      var { paths } = await parser(this.url);
     } catch (e) {
       throw e;
     }
@@ -156,15 +139,13 @@ class MockRouter {
       if (~this.blackList.indexOf(path)) return;
 
       Object.keys(paths[path]).forEach(method => {
-        const {
-          responses
-        } = paths[path][method];
+        const { responses } = paths[path][method];
         if (responses && !responses["200"]) return;
 
-        const schema = this.findResponseSchema(responses['200'])
-        const example = this.createExample(schema)
+        const schema = this.findResponseSchema(responses["200"]);
+        const example = this.createExample(schema);
 
-        console.log(responses['200'])
+        console.log(responses["200"]);
         pathinfo.push({
           path,
           method
@@ -176,52 +157,41 @@ class MockRouter {
 
   findResponseSchema(res) {
     for (var item in res) {
-      if (item === 'schema') return res[item]
-      if (res[item] && typeof res[item] === 'object') return this.findResponseSchema(res[item])
+      if (item === "schema") return res[item];
+      if (res[item] && typeof res[item] === "object")
+        return this.findResponseSchema(res[item]);
     }
   }
 
   createExample(schema) {
-    let example
+    let example;
     switch (schema.type) {
-      case 'array':
-        this.generateArrayItem(schema, example)
+      case "array":
+        this.generateArrayItem(schema, example);
     }
 
-    return example
+    return example;
   }
 
   generateArrayItem(schema, example) {
-    let max = schema['x-swagger-maxItems'] ? schema['x-swagger-maxItems'] : 5
-    let min = schema['x-swagger-minItems'] ? schema['x-swagger-minItems'] : 1
-    const count = Math.max(min, Math.floor(Math.random() * max))
-    const {
-      items
-    } = schmea
-    createExample(items)
+    let max = schema["x-swagger-maxItems"] ? schema["x-swagger-maxItems"] : 5;
+    let min = schema["x-swagger-minItems"] ? schema["x-swagger-minItems"] : 1;
+    const count = Math.max(min, Math.floor(Math.random() * max));
+    const { items } = schema;
+    this.createExample(items);
   }
 
-  generateObject(schema, example) {
+  generateObject(schema, example) {}
 
-  }
+  generateString(schema, example) {}
 
-  generateString(schema, example) {
-
-  }
-
-  generagteNumber(schema, example) {
-
-  }
+  generagteNumber(schema, example) {}
 
   generateTemplate(pathinfo) {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({
-      path,
-      method,
-      example
-    }) => {
+    pathinfo.forEach(({ path, method, example }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
