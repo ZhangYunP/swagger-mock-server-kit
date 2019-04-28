@@ -32,12 +32,8 @@ module.exports = (doc, docPath, mockhost, log) => {
       }
     })
   })
-
-  log.slog("[info]  ", 'path consumes: ' + [...consumes])
-  log.slog("[info]  ", 'path produces: ' + [...produces])
   const existsConsumes = [...(doc.consumes || []), "application/octet-stream"]
   const existsProduces = [...(doc.produces || []), "application/octet-stream"]
-
   sadd(consumes, existsConsumes)
   sadd(produces, existsProduces)
 
