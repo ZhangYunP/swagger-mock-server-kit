@@ -6,6 +6,7 @@ const cors = require("cors");
 const proxy = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const multer = require("multer");
+const fs = require('fs')
 const setupMiddleware = require("./setup-middleware");
 const {
   multerOptions
@@ -167,8 +168,8 @@ const getSwaggerDocument = docFilename => {
 
   try {
     if (ext === ".yaml") {
-      const yaml = require("yamljs");
-      swaggerDocument = yaml.load(docFilename);
+      const yaml = require("js-yaml");
+      swaggerDocument = yaml.safeLoad(fs.readFileSync(docFilename))
     } else {
       swaggerDocument = require(docFilename);
     }

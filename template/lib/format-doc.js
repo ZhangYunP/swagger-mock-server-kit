@@ -1,5 +1,11 @@
 const fs = require('fs')
 const {
+  extname
+} = require('path')
+const {
+  safeDump
+} = require('js-yaml')
+const {
   sadd,
   isvalidatePort
 } = require('./utils')
@@ -15,8 +21,7 @@ module.exports = (doc, docPath, mockhost, log) => {
     const parts = doc.host.split(":")
     doc.host = mockhost + ":" + parts[1]
   }
-
-
+  var yamldoc
   const consumes = new Set()
   const produces = new Set()
   Object.keys(paths).forEach(path => {
@@ -42,6 +47,14 @@ module.exports = (doc, docPath, mockhost, log) => {
 
   doc.consumes = [...consumes]
   doc.produces = [...produces]
-  fs.writeFileSync(docPath, JSON.stringify(doc, null, 4))
+
+  const ext = extname(docPath)
+  if (ext === '.yaml') {
+    yamldoc = safeDump(doc)
+    fs.writeFileSync(docPath, yamldoc)
+  } else {
+    fs.writeFileSync(docPath, JSON.stringify(doc, null, 4))
+  }
+
   return doc
 }
