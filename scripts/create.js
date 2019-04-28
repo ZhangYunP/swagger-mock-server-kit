@@ -37,7 +37,7 @@ function create(projectName = "swagger-mock-server", options) {
 
     log.success(
       "[info]  ",
-      "template path is: " + sourceDird + ", and will copy to " + distDir
+      "template path is: " + sourceDir + ", and will copy to " + distDir
     );
 
     if (!fs.existsSync(sourceDir)) {
