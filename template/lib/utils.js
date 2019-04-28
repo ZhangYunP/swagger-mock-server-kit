@@ -14,6 +14,11 @@ const {
 const log = console.log;
 const upload = multer(multerOptions);
 
+const isvalidatePort = port => {
+  port = parseInt(port, 10)
+  return !isNaN(port) && (port > 0 && port < 65535)
+}
+
 const formatConfig = (config = {}) => {
   if (!config.appRoot) {
     throw new Error("appRoot is required");
@@ -27,7 +32,7 @@ const formatConfig = (config = {}) => {
   return config;
 };
 
-tojsonPointer = path => {
+const tojsonPointer = path => {
   return path
     .map(part => {
       return part.replace(/\//, "~|");
@@ -35,7 +40,13 @@ tojsonPointer = path => {
     .join("/");
 };
 
-formatResultMessage = ({
+const sadd = (set, data) => {
+  data.forEach(d => {
+    set.add(d)
+  })
+}
+
+const formatResultMessage = ({
   errors,
   warnings
 }, log) => {
@@ -88,20 +99,18 @@ formatResultMessage = ({
 
 const findServerConfig = ({
   host = "",
-  basePath = "/api/v1",
-  consumes
+  basePath = "/api/v1"
 }) => {
   let port;
   const parts = host.split(":");
-  if (parts[1]) {
-    port = Number(parts[1]);
-  } else {
-    port = process.env.PORT || 12121;
+  if (!parts[1]) {
+    throw new Error('port must be provided')
   }
+  port = Number(parts[1])
+
   return {
     port,
-    baseUrl: basePath,
-    consumes
+    baseUrl: basePath
   };
 };
 
@@ -122,6 +131,7 @@ const setParseForm = app => {
 };
 
 const setupNeededMiddleware = (app, opts) => {
+  opts.consumes = opts.consumes || []
   opts.consumes.forEach(mime => {
     if (mime.indexOf("urlencoded")) {
       setParseBody(app);
@@ -182,5 +192,7 @@ module.exports = {
   error,
   success,
   warning,
-  installMiddleware
+  sadd,
+  installMiddleware,
+  isvalidatePort
 };

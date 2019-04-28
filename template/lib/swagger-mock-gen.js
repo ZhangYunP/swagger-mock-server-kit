@@ -24,7 +24,6 @@ class MockRouter {
       const Mock = require('mockjs')
 
       module.exports = (app, api) => {
-        const operation = api.getOperation();
     `;
     this.modEnd = `
       }
@@ -117,7 +116,7 @@ class MockRouter {
         } = paths[path][method];
         if (responses && !responses["200"]) return;
 
-        console.log(paths);
+        // console.log(paths);
         const {
           example
         } = responses["200"];
@@ -145,15 +144,16 @@ class MockRouter {
         /\{([^}]*)\}/g,
         ":$1"
       )}', (req, res) => {
-          
-        const results = operation.validateRequest(res);
+        const operation = api.getOperation(req);
+        const results = operation.validateResponse(res);
     
         if (!results.errors.length && !results.warnings.length) {
           res.json(Mock.mock(${example}));
         } else {
-          res.json({
+          res.status(400).json({
             code: 40002,
-            message: "invalidate response"
+            message: "invalidate response",
+            error: results.errors
           })
         }
          })

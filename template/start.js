@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const MockRouter = require("./lib/swagger-mock-gen");
+const formatDoc = require('./lib/format-doc')
 const config = require("./config");
 const {
   formatConfig,
@@ -13,10 +14,25 @@ const {
 } = require("./lib/utils");
 
 const baseconfig = formatConfig(config);
-const { appRoot, docFilename, docUIPath, plugins } = baseconfig;
+const {
+  appRoot,
+  docFilename,
+  docUIPath,
+  plugins
+} = baseconfig;
 
-const swaggerDocument = getSwaggerDocument(docFilename);
-const { port, baseUrl, consumes } = findServerConfig(swaggerDocument);
+let swaggerDocument = getSwaggerDocument(docFilename);
+
+swaggerDocument = formatDoc(swaggerDocument, docFilename, {
+  slog,
+  elog
+})
+
+const {
+  port,
+  baseUrl,
+  consumes
+} = findServerConfig(swaggerDocument);
 
 const docRelative = path.relative(appRoot, docFilename);
 const docPath = docRelative.replace(/\\/, "/");
@@ -24,7 +40,10 @@ const docPath = docRelative.replace(/\\/, "/");
 const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
 
 const app = express();
-setupNeededMiddleware(app, { path: appRoot, consumes });
+setupNeededMiddleware(app, {
+  path: appRoot,
+  consumes
+});
 
 const mockRouter = new MockRouter({
   url: swaggerDocUlr,
@@ -47,11 +66,12 @@ app.listen(port, async err => {
 
   slog(
     "[info]  ",
-    `mock server is starting at ${port}, you can get mock data on ${baseUrl}`
-  );
-  slog(
-    "[info]  ",
     "swagger ui doc url is: http://localhost:" + port + docUIPath
+  );
+
+  slog(
+    "[success]  ",
+    `mock server is starting at ${port}, you can get mock data on ${baseUrl}`
   );
 });
 

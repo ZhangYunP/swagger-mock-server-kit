@@ -6,10 +6,16 @@ const {
 } = require("../lib/utils");
 
 module.exports = (api, opts = {}, app) => {
-  const operation = api.getOperation();
 
   return (req, res, next) => {
+
+    const operation = api.getOperation(req);
+
     const results = operation.validateRequest(req, opts);
+    success(
+      "-------------------------------------------------------------------------------------------------",
+      ""
+    );
     success(
       "[request]  ",
       `method: ${req.method}, path:  ${req.path}, body: ${JSON.stringify(
@@ -25,11 +31,11 @@ module.exports = (api, opts = {}, app) => {
       elog
     });
     success(
-      "----------------------------------------------------------------",
+      "-------------------------------------------------------------------------------------------------",
       ""
     );
     if (results.errors.length === 0) return next();
-    res.status(40001).json({
+    res.status(400).json({
       code: 40001,
       message: "invalidate request"
     });
