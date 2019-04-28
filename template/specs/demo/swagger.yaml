@@ -23,8 +23,8 @@ paths:
           description: 返回所有用户信息
           schema:
             type: array
-            x-swagger-maxItems: 5
-            x-swagger-minItems: 1
+            maxItems: 100
+            minItems: 10
             items:
               type: object
               properties:
@@ -41,7 +41,6 @@ paths:
                   format: email
                 avatar:
                   type: string
-                  x-swagger-format: image
                 nickname:
                   type: string
                 role:
@@ -49,12 +48,11 @@ paths:
                   format: int32
                 phone:
                   type: string
-                  x-swagger-format: phone
                 create_time:
                   type: string
-                  format: date-time
+                  format: date
                 update_time:
                   type: string
-                  format: date-time
+                  format: date
                 isValidate:
                   type: boolean
