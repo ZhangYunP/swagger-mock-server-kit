@@ -198,7 +198,7 @@ class MockRouter {
     const {
       items
     } = schmea
-    createExample(items)
+    let itemExample = createExample(items)
   }
 
   generateObject(schema, example) {
