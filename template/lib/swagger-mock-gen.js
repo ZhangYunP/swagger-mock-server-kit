@@ -12,7 +12,9 @@ const {
 } = require("./utils");
 
 const registerValidateMiddleWare = (app, api, baseUrl) => {
-  app.use(baseUrl, validateRquest(api, { strictMode: false }));
+  app.use(baseUrl, validateRquest(api, {
+    strictMode: false
+  }));
 };
 
 class MockRouter {
@@ -94,7 +96,9 @@ class MockRouter {
 
   async parseDoc() {
     try {
-      var { paths } = await parser(this.url);
+      var {
+        paths
+      } = await parser(this.url);
     } catch (e) {
       throw e;
     }
@@ -108,11 +112,15 @@ class MockRouter {
       if (~this.blackList.indexOf(path)) return;
 
       Object.keys(paths[path]).forEach(method => {
-        const { responses } = paths[path][method];
+        const {
+          responses
+        } = paths[path][method];
         if (responses && !responses["200"]) return;
 
         console.log(paths);
-        const { example } = responses["200"];
+        const {
+          example
+        } = responses["200"];
         pathinfo.push({
           path,
           method,
@@ -123,53 +131,15 @@ class MockRouter {
     return pathinfo;
   }
 
-<<<<<<< HEAD
-  findResponseSchema(res) {
-    for (var item in res) {
-      if (item === 'schema') return res[item]
-      if (res[item] && typeof res[item] === 'object') return this.findResponseSchema(res[item])
-    }
-  }
-
-  createExample(schema) {
-    let example
-    switch (schema.type) {
-      case 'array':
-        this.generateArrayItem(schema, example)
-    }
-
-    return example
-  }
-
-  generateArrayItem(schema, example) {
-    let max = schema['x-swagger-maxItems'] ? schema['x-swagger-maxItems'] : 5
-    let min = schema['x-swagger-minItems'] ? schema['x-swagger-minItems'] : 1
-    const count = Math.max(min, Math.floor(Math.random() * max))
-    const {
-      items
-    } = schmea
-    let itemExample = createExample(items)
-  }
-
-  generateObject(schema, example) {
-
-  }
-
-  generateString(schema, example) {
-
-  }
-
-  generagteNumber(schema, example) {
-
-  }
-
-=======
->>>>>>> ba9de3d9e37ee4305e7d36c7ceebd7f9b4969ffc
   generateTemplate(pathinfo) {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({ path, method, example }) => {
+    pathinfo.forEach(({
+      path,
+      method,
+      example
+    }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
