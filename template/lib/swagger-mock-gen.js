@@ -2,7 +2,7 @@ const fs = require("fs");
 const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
-const validateRquest = require("../middlewares/validate-http");
+const validateRquestMiddleware = require("../middlewares/validate-http");
 
 const {
   success,
@@ -11,8 +11,13 @@ const {
   formatResultMessage
 } = require("./utils");
 
+const {
+  validateRequest,
+  validateResponse
+} = require('../config')
+
 const registerValidateMiddleWare = (app, api, baseUrl) => {
-  app.use(baseUrl, validateRquest(api, {
+  app.use(baseUrl, validateRquestMiddleware(api, {
     strictMode: false
   }));
 };
@@ -23,7 +28,7 @@ class MockRouter {
     this.modStart = `
       const Mock = require('mockjs')
 
-      module.exports = (app, api) => {
+      module.exports = (app, api, isvalidateRes) => {
     `;
     this.modEnd = `
       }
@@ -63,15 +68,15 @@ class MockRouter {
 
   async init(app) {
     try {
-      const isValidate = await this.validateDoc({
+      const isValidateDoc = await this.validateDoc({
         definition: this.url
       });
 
-      if (!isValidate) {
+      if (!isValidateDoc) {
         throw new Error("invalid doc file");
       }
 
-      registerValidateMiddleWare(app, this.api, this.baseUrl);
+      if (validateRequest) registerValidateMiddleWare(app, this.api, this.baseUrl);
 
       const paths = await this.parseDoc();
 
@@ -82,7 +87,7 @@ class MockRouter {
       this.emitFile(template, err => {
         if (err) throw err;
 
-        this.setup(app, err => {
+        this.setup(app, validateResponse, err => {
           if (err) throw err;
           success("[info]  ", "register mockdata router success");
         });
@@ -144,17 +149,21 @@ class MockRouter {
         /\{([^}]*)\}/g,
         ":$1"
       )}', (req, res) => {
-        const operation = api.getOperation(req);
-        const results = operation.validateResponse(res);
+        if (isvalidateRes) {
+          const operation = api.getOperation(req);
+          const results = operation.validateResponse(res);
     
-        if (!results.errors.length && !results.warnings.length) {
-          res.json(Mock.mock(${example}));
+          if (!results.errors.length && !results.warnings.length) {
+            res.json(Mock.mock(${example}));
+          } else {
+            res.status(400).json({
+              code: 40002,
+              message: "invalidate response",
+              error: results.errors
+            })
+          }
         } else {
-          res.status(400).json({
-            code: 40002,
-            message: "invalidate response",
-            error: results.errors
-          })
+            res.json(Mock.mock(${example}));
         }
          })
        `;
@@ -174,12 +183,12 @@ class MockRouter {
     cb(null);
   }
 
-  setup(app, cb) {
+  setup(app, validateResponse, cb) {
     if (!fs.existsSync(this.dist)) {
       cb(new Error("not found mockroute in dist"));
     }
     const registerRoute = require(this.dist);
-    registerRoute(app, this.api);
+    registerRoute(app, this.api, validateResponse);
     cb(null);
   }
 }

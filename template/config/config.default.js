@@ -10,9 +10,14 @@ const multerOptions = {
   dest: "upload/"
 };
 
+const validateRequest = true
+const validateResponse = true
+
 module.exports = {
   appRoot,
   docFilename,
   docUIPath,
-  multerOptions
+  multerOptions,
+  validateRequest,
+  validateResponse
 };
