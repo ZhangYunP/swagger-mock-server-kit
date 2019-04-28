@@ -56,7 +56,7 @@ const mockRouter = new MockRouter({
 
 app.listen(port, async err => {
   if (err) elog("error: ", err);
-  slog("[info]  ", "register mockdate router by " + docPath);
+  slog("[info]  ", "register mockdate router, using " + docPath);
 
   await mockRouter.init(app);
 

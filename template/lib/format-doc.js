@@ -37,8 +37,8 @@ module.exports = (doc, docPath, mockhost, log) => {
   sadd(consumes, existsConsumes)
   sadd(produces, existsProduces)
 
-  log.slog("[info]  ", 'consumes: ' + [...consumes])
-  log.slog("[info]  ", 'produces: ' + [...produces])
+  log.slog("[info]  ", 'accept request content-type: ' + [...consumes])
+  log.slog("[info]  ", 'accept response content-type: ' + [...produces])
 
   doc.consumes = [...consumes]
   doc.produces = [...produces]
