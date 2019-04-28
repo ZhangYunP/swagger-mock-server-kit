@@ -7,7 +7,9 @@ const proxy = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const setupMiddleware = require("./setup-middleware");
-const { multerOptions } = require("../config");
+const {
+  multerOptions
+} = require("../config");
 
 const log = console.log;
 const upload = multer(multerOptions);
@@ -33,19 +35,26 @@ tojsonPointer = path => {
     .join("/");
 };
 
-formatResultMessage = ({ errors, warnings }, log) => {
+formatResultMessage = ({
+  errors,
+  warnings
+}, log) => {
   if (errors.length) {
     errors.forEach(error => {
-      let { code, path, message } = error;
+      let {
+        code,
+        path,
+        message
+      } = error;
       path = "#/" + tojsonPointer(path);
       log.elog(
         "error: ",
         "apidoc error occurr at " +
-          path +
-          ", errcode: " +
-          code +
-          ", errormessage: " +
-          message
+        path +
+        ", errcode: " +
+        code +
+        ", errormessage: " +
+        message
       );
     });
     log.elog("error: ", "errors number: " + errors.length);
@@ -53,16 +62,20 @@ formatResultMessage = ({ errors, warnings }, log) => {
 
   if (warnings.length) {
     warnings.forEach(warning => {
-      const { code, path, message } = warning;
+      const {
+        code,
+        path,
+        message
+      } = warning;
       path = "#/" + this.tojsonPointer(path);
       log.warning(
         "warning: ",
         "apidoc warning occurr at " +
-          path +
-          ", errcode: " +
-          code +
-          ", errormessage: " +
-          message
+        path +
+        ", errcode: " +
+        code +
+        ", errormessage: " +
+        message
       );
     });
     log.warning("warning: ", "warnings number: " + warnings.length);
@@ -73,7 +86,11 @@ formatResultMessage = ({ errors, warnings }, log) => {
   }
 };
 
-const findServerConfig = ({ host = "", basePath = "/api/v1", consumes }) => {
+const findServerConfig = ({
+  host = "",
+  basePath = "/api/v1",
+  consumes
+}) => {
   let port;
   const parts = host.split(":");
   if (parts[1]) {
@@ -88,12 +105,14 @@ const findServerConfig = ({ host = "", basePath = "/api/v1", consumes }) => {
   };
 };
 
-const setStaticPath = (app, path) => {
+const setStaticPath = (app, path, baseUrl) => {
   app.use(express.static(path));
 };
 
 const setParseBody = app => {
-  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(bodyParser.urlencoded({
+    extended: false
+  }));
 
   app.use(bodyParser.json());
 };
