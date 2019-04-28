@@ -151,7 +151,11 @@ class MockRouter {
       )}', (req, res) => {
         if (isvalidateRes) {
           const operation = api.getOperation(req);
-          const results = operation.validateResponse(res);
+          const responseData = {
+            body: Mock.mock(${example}),
+            statusCode: res.statusCode
+          }
+          const results = operation.validateResponse(responseData);
     
           if (!results.errors.length && !results.warnings.length) {
             res.json(Mock.mock(${example}));

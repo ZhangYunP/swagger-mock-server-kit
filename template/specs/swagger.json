@@ -950,6 +950,7 @@
     ],
     "produces": [
         "application/xml",
-        "application/json"
+        "application/json",
+        "application/octet-stream"
     ]
 }
