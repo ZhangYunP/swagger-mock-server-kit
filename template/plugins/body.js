@@ -3,27 +3,23 @@ const _ = require("lodash");
 const fs = require("fs");
 const path = requrie("path");
 const { safeLoad } = require("js-yaml");
+const { docFilename } = require("../config");
 
 class Body {
-  constructor(opts) {
+  constructor(opts = {}) {
     this.opts = opts;
     this.init();
   }
 
-  init() {}
-
-  name(name, docName = "swagger.yaml") {
-    const { appRoot } = this.opts;
-    const projectPath = path.join(appRoot, "specs", name, docName);
-    if (!fs.existsSync(projectPath))
-      throw new Error("not exists file: " + projectPath);
-    const ext = path.extname(docName);
+  init() {
+    if (!fs.existsSync(docFilename))
+      throw new Error("not exists file: " + docFilename);
+    const ext = path.extname(docFilename);
     if (ext === ".yaml") {
-      this.doc = safeLoad(fs.readFileSync(projectPath));
+      this.doc = safeLoad(fs.readFileSync(docFilename));
     } else {
-      this.doc = requrie(projectPath);
+      this.doc = requrie(docFilename);
     }
-    return this;
   }
 
   find(path) {
