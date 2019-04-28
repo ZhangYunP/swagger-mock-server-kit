@@ -2,16 +2,18 @@ const fs = require("fs");
 const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
-
-const {
-  appRoot
-} = require('../config/config')
+const validateRquest = require("../middlewares/validate-http");
 
 const {
   success,
   error: elog,
-  warning: wlog
-} = require('./utils')
+  warning,
+  formatResultMessage
+} = require("./utils");
+
+const registerValidateMiddleWare = (app, api, baseUrl) => {
+  app.use(baseUrl, validateRquest(api, { strictMode: false }));
+};
 
 class MockRouter {
   constructor(opts = {}) {
@@ -19,14 +21,8 @@ class MockRouter {
     this.modStart = `
       const Mock = require('mockjs')
 
-      module.exports = app => {
-    `;
-    this.hookRoute = `
-        app.get('/api/foo', (req, res) => {
-          res.json({
-            bar: 'baz'
-          })
-        })
+      module.exports = (app, api) => {
+        const operation = api.getOperation();
     `;
     this.modEnd = `
       }
@@ -38,7 +34,8 @@ class MockRouter {
 
   formatopts(opts) {
     if (!opts.url) throw new Error("opts.url is required");
-    opts.output = opts.output || path.join(appRoot, "routes");
+    opts.output =
+      opts.output || path.join(opts.appRoot || process.cwd(), "routes");
     opts.filename = opts.filename || "mockRoutes.js";
     opts.blackList = opts.blackList || [];
     opts.baseUrl = opts.baseUrl || "/api";
@@ -48,66 +45,19 @@ class MockRouter {
   async validateDoc(swayOpts) {
     try {
       const api = await sway.create(swayOpts);
-      const {
-        errors,
-        warnings
-      } = await api.validate();
-      if (errors.length) {
-        errors.forEach(error => {
-          let {
-            code,
-            path,
-            message
-          } = error;
-          path = "#/" + this.tojsonPointer(path);
-          elog(
-            "apidoc error occurr at " +
-            path +
-            ", errcode: " +
-            code +
-            ", errormessage: " +
-            message
-          );
-        });
-        elog("errors number: " + errors.length);
-        return false
-      }
-
-      if (warnings.length) {
-        warnings.forEach(warning => {
-          const {
-            code,
-            path,
-            message
-          } = warning;
-          path = "#/" + this.tojsonPointer(path);
-          wlog(
-            "apidoc warning occurr at " +
-            path +
-            ", errcode: " +
-            code +
-            ", errormessage: " +
-            message
-          );
-        });
-        wlog("warnings number: " + warnings.length);
-      }
-
-      if (!errors.length && !warnings.length) {
-        success("validate results: errors 0, warnings 0");
-      }
+      const results = await api.validate();
+      formatResultMessage(results, {
+        success,
+        elog,
+        warning
+      });
+      if (results.errors.length > 0) return false;
       this.api = api;
       return true;
     } catch (e) {
-      console.log(e);
+      elog("error: ", e);
       return false;
     }
-  }
-
-  tojsonPointer(path) {
-    return path.map(part => {
-      return part.replace(/\//, '~|')
-    }).join('/')
   }
 
   async init(app) {
@@ -119,6 +69,9 @@ class MockRouter {
       if (!isValidate) {
         throw new Error("invalid doc file");
       }
+
+      registerValidateMiddleWare(app, this.api, this.baseUrl);
+
       const paths = await this.parseDoc();
 
       const pathinfo = this.extractPathInfo(paths);
@@ -130,19 +83,18 @@ class MockRouter {
 
         this.setup(app, err => {
           if (err) throw err;
-          success("register mockdata router success");
+          success("[info]  ", "register mockdata router success");
         });
       });
     } catch (e) {
+      elog("error: ", e);
       throw e;
     }
   }
 
   async parseDoc() {
     try {
-      var {
-        paths
-      } = await parser(this.url);
+      var { paths } = await parser(this.url);
     } catch (e) {
       throw e;
     }
@@ -156,24 +108,22 @@ class MockRouter {
       if (~this.blackList.indexOf(path)) return;
 
       Object.keys(paths[path]).forEach(method => {
-        const {
-          responses
-        } = paths[path][method];
+        const { responses } = paths[path][method];
         if (responses && !responses["200"]) return;
 
-        const schema = this.findResponseSchema(responses['200'])
-        const example = this.createExample(schema)
-
-        console.log(responses['200'])
+        console.log(paths);
+        const { example } = responses["200"];
         pathinfo.push({
           path,
-          method
+          method,
+          example
         });
       });
     });
     return pathinfo;
   }
 
+<<<<<<< HEAD
   findResponseSchema(res) {
     for (var item in res) {
       if (item === 'schema') return res[item]
@@ -213,25 +163,33 @@ class MockRouter {
 
   }
 
+=======
+>>>>>>> ba9de3d9e37ee4305e7d36c7ceebd7f9b4969ffc
   generateTemplate(pathinfo) {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({
-      path,
-      method,
-      example
-    }) => {
+    pathinfo.forEach(({ path, method, example }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
         ":$1"
       )}', (req, res) => {
-           res.json(Mock.mock(${example}));
+          
+        const results = operation.validateRequest(res);
+    
+        if (!results.errors.length && !results.warnings.length) {
+          res.json(Mock.mock(${example}));
+        } else {
+          res.json({
+            code: 40002,
+            message: "invalidate response"
+          })
+        }
          })
        `;
     });
-    template += this.hookRoute;
+
     template += this.modEnd;
 
     return template;
@@ -251,7 +209,7 @@ class MockRouter {
       cb(new Error("not found mockroute in dist"));
     }
     const registerRoute = require(this.dist);
-    registerRoute(app);
+    registerRoute(app, this.api);
     cb(null);
   }
 }

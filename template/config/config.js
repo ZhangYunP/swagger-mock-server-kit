@@ -1,13 +1,9 @@
-const path = require("path");
+const { resolve } = require("path");
 
-const appRoot = path.resolve(__dirname, "..");
+const pluginPath = resolve(__dirname, "../plugins");
 
-const docFilename = path.resolve(appRoot, "specs/swagger.yaml");
-
-const docUIPath = "/api-docs";
+const demoplugin = resolve(pluginPath, "random-image.js");
 
 module.exports = {
-  appRoot,
-  docFilename,
-  docUIPath
+  plugins: [demoplugin]
 };
