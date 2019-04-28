@@ -116,9 +116,10 @@ const findServerConfig = ({
 
 const setStaticPath = (app, path, baseUrl) => {
   app.use(express.static(path));
+  app.use(baseUrl, express.static(path))
 };
 
-const setParseBody = app => {
+const parseBody = app => {
   app.use(bodyParser.urlencoded({
     extended: false
   }));
@@ -126,7 +127,7 @@ const setParseBody = app => {
   app.use(bodyParser.json());
 };
 
-const setParseForm = app => {
+const parseForm = app => {
   app.use(upload.array());
 };
 
@@ -134,12 +135,12 @@ const setupNeededMiddleware = (app, opts) => {
   opts.consumes = opts.consumes || []
   opts.consumes.forEach(mime => {
     if (mime.indexOf("urlencoded")) {
-      setParseBody(app);
+      parseBody(app);
     } else if (mime.indexOf("form-data")) {
-      setParseForm(app);
+      parseForm(app);
     }
   });
-  setStaticPath(app, opts.path);
+  setStaticPath(app, opts.path, opts.baseUrl);
 };
 
 const installMiddleware = (app, config) => {

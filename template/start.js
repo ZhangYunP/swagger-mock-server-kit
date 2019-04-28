@@ -43,6 +43,7 @@ const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
 const app = express();
 setupNeededMiddleware(app, {
   path: appRoot,
+  baseUrl,
   consumes
 });
 
