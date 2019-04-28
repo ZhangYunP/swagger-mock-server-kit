@@ -18,12 +18,13 @@ const {
   appRoot,
   docFilename,
   docUIPath,
+  mockhost,
   plugins
 } = baseconfig;
 
 let swaggerDocument = getSwaggerDocument(docFilename);
 
-swaggerDocument = formatDoc(swaggerDocument, docFilename, {
+swaggerDocument = formatDoc(swaggerDocument, docFilename, mockhost, {
   slog,
   elog
 })

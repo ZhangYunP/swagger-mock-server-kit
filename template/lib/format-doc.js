@@ -4,13 +4,18 @@ const {
   isvalidatePort
 } = require('./utils')
 
-module.exports = (doc, docPath, log) => {
+module.exports = (doc, docPath, mockhost, log) => {
   const {
     paths
   } = doc
   if (!~doc.host.indexOf(':') || !isvalidatePort(doc.host.split(":")[1])) {
     doc.host = doc.host.split(":")[0] + ":" + (process.env.PROT || 12121)
   }
+  if (mockhost) {
+    const parts = doc.host.split(":")
+    doc.host = mockhost + ":" + parts[1]
+  }
+
 
   const consumes = new Set()
   const produces = new Set()

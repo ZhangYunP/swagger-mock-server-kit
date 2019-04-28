@@ -4,6 +4,8 @@ const appRoot = path.resolve(__dirname, "..");
 
 const docFilename = path.resolve(appRoot, "specs/swagger.json");
 
+const mockhost = 'localhost'
+
 const docUIPath = "/api-docs";
 
 const multerOptions = {
@@ -16,6 +18,7 @@ const validateResponse = true
 module.exports = {
   appRoot,
   docFilename,
+  mockhost,
   docUIPath,
   multerOptions,
   validateRequest,
