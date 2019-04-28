@@ -2,7 +2,7 @@ const path = require("path");
 
 const appRoot = path.resolve(__dirname, "..");
 
-const docFilename = path.resolve(appRoot, "specs/swagger.json");
+const docFilename = path.resolve(appRoot, "specs/demo/swagger.json");
 
 const mockhost = 'localhost'
 
