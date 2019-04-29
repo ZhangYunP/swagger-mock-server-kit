@@ -7,6 +7,7 @@ const proxy = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const fs = require('fs')
+const RandExp = require('randexp');
 const setupMiddleware = require("./setup-middleware");
 const {
   multerOptions
@@ -144,6 +145,11 @@ const setupNeededMiddleware = (app, opts) => {
   setStaticPath(app, opts.path, opts.baseUrl);
 };
 
+const genRegexString = (regExp) => {
+  if (!(regExp instanceof RegExp)) regExp = new RegExp(regExp)
+  return new RandExp(regExp).gen()
+}
+
 const installMiddleware = (app, config) => {
   app.use(cors());
   app.use(
@@ -185,6 +191,21 @@ const success = (string, metadata) => void log(chalk.green(string), metadata);
 
 const warning = (string, metadata) => void log(chalk.yellow(string), metadata);
 
+const choice = (min, max) => {
+  const count = Math.max(min, Math.floor(Math.random() * max))
+  return count
+}
+
+const getFixString = (string, min, max) => {
+  const length = choice(min, max)
+  if (string.length < length) {
+    string = string + '.'.repeat(length - string.length)
+  } else if (string.length > length) {
+    string = string.substr(0, length)
+  }
+  return string
+}
+
 module.exports = {
   formatConfig,
   getSwaggerDocument,
@@ -196,5 +217,8 @@ module.exports = {
   warning,
   sadd,
   installMiddleware,
-  isvalidatePort
+  isvalidatePort,
+  genRegexString,
+  choice,
+  getFixString
 };

@@ -8,6 +8,8 @@ const mockhost = "localhost";
 
 const docUIPath = "/api-docs";
 
+const mockExtPath = path.join(appRoot, 'lib/random-extend.js')
+
 const multerOptions = {
   dest: "upload/"
 };
@@ -22,5 +24,6 @@ module.exports = {
   docUIPath,
   multerOptions,
   validateRequest,
-  validateResponse
+  validateResponse,
+  mockExtPath
 };

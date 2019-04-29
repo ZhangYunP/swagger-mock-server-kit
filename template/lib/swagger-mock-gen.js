@@ -3,6 +3,8 @@ const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
 const validateRquestMiddleware = require("../middlewares/validate-http");
+const Body = require('./body')
+const bus = require('./event-bus')
 
 const {
   success,
@@ -13,7 +15,8 @@ const {
 
 const {
   validateRequest,
-  validateResponse
+  validateResponse,
+  mockExtPath
 } = require('../config')
 
 const registerValidateMiddleWare = (app, api, baseUrl) => {
@@ -25,8 +28,10 @@ const registerValidateMiddleWare = (app, api, baseUrl) => {
 class MockRouter {
   constructor(opts = {}) {
     this.opts = this.formatopts(opts);
+    const routesPath = path.join(this.opts.output)
+    const mockPath = path.relative(routesPath, mockExtPath).replace(/\\/g, '/')
     this.modStart = `
-      const Mock = require('mockjs')
+      const mock = require('${mockPath}')
 
       module.exports = (app, api, isvalidateRes) => {
     `;
@@ -36,6 +41,7 @@ class MockRouter {
     Object.assign(this, this.opts);
     this.dist = path.join(this.output, this.filename);
     this.api = null;
+    this.body = new Body()
   }
 
   formatopts(opts) {
@@ -78,11 +84,12 @@ class MockRouter {
 
       if (validateRequest) registerValidateMiddleWare(app, this.api, this.baseUrl);
 
-      const paths = await this.parseDoc();
+      const {
+        pathInfo
+      } = this.body
+      // bus.emit(this.body)
 
-      const pathinfo = this.extractPathInfo(paths);
-
-      const template = this.generateTemplate(pathinfo);
+      const template = this.generateTemplate(pathInfo);
 
       this.emitFile(template, err => {
         if (err) throw err;
@@ -96,43 +103,6 @@ class MockRouter {
       elog("error: ", e);
       throw e;
     }
-  }
-
-  async parseDoc() {
-    try {
-      var {
-        paths
-      } = await parser(this.url);
-    } catch (e) {
-      throw e;
-    }
-    return paths;
-  }
-
-  extractPathInfo(paths) {
-    const pathinfo = [];
-
-    Object.keys(paths).forEach(path => {
-      if (~this.blackList.indexOf(path)) return;
-
-      Object.keys(paths[path]).forEach(method => {
-        const {
-          responses
-        } = paths[path][method];
-        if (responses && !responses["200"]) return;
-
-        // console.log(paths);
-        const {
-          example
-        } = responses["200"];
-        pathinfo.push({
-          path,
-          method,
-          example
-        });
-      });
-    });
-    return pathinfo;
   }
 
   generateTemplate(pathinfo) {
@@ -152,13 +122,13 @@ class MockRouter {
         if (isvalidateRes) {
           const operation = api.getOperation(req);
           const responseData = {
-            body: Mock.mock(${example}),
+            body: mock(${JSON.stringify(example)}),
             statusCode: res.statusCode
           }
           const results = operation.validateResponse(responseData);
     
           if (!results.errors.length && !results.warnings.length) {
-            res.json(Mock.mock(${example}));
+            res.json(mock(${JSON.stringify(example)}));
           } else {
             res.status(400).json({
               code: 40002,
@@ -167,7 +137,7 @@ class MockRouter {
             })
           }
         } else {
-            res.json(Mock.mock(${example}));
+            res.json(mock(${JSON.stringify(example)}));
         }
          })
        `;

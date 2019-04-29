@@ -23,8 +23,8 @@ paths:
           description: 返回所有用户信息
           schema:
             type: array
-            maxItems: 100
-            minItems: 10
+            maxItems: 10
+            minItems: 1
             items:
               type: object
               properties:
@@ -57,10 +57,10 @@ paths:
                   type: string
                 create_time:
                   type: string
-                  format: date
+                  format: date-time
                 update_time:
                   type: string
-                  format: date
+                  format: date-time
                 info:
                   type: string
                 isValidate:
