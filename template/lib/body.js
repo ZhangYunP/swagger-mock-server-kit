@@ -52,6 +52,7 @@ class Body {
 
   parseSchema(schema) {
     if (schema.$ref) {
+      console.log(schema.$ref);
       this.resolveRef(schema.$ref);
     }
     switch (schema.type) {
