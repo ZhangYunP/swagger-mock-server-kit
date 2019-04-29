@@ -1,21 +1,15 @@
 const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");
-const {
-  safeLoad
-} = require("js-yaml");
-const {
-  choice
-} = require('./utils')
-const {
-  docFilename
-} = require("../config");
+const { safeLoad } = require("js-yaml");
+const { choice } = require("./utils");
+const { docFilename } = require("../config");
 
 // base on JSON Schema Draft 4
 class Body {
   constructor(opts = {}) {
     this.opts = opts;
-    this.pathInfo = []
+    this.pathInfo = [];
     this.init();
   }
 
@@ -27,147 +21,140 @@ class Body {
       if (ext === ".yaml") {
         this.doc = safeLoad(fs.readFileSync(docFilename));
       } else {
-        this.doc = requrie(docFilename);
+        this.doc = require(docFilename);
       }
     } catch (e) {
-      throw e
+      throw e;
     }
-    this.parseDoc(this.doc)
+    this.parseDoc(this.doc);
   }
 
   parseDoc(doc) {
     _.each(doc.paths, (pathinfo, path) => {
-      _.each(pathinfo, ({
-        responses = {}
-      }, method) => {
+      _.each(pathinfo, ({ responses = {} }, method) => {
         if (
-          _.keys(responses).length === 0 ||
-          !responses["200"] ||
-          !responses["200"].schema
+          _.keys(responses).length !== 0 &&
+          responses["200"] &&
+          responses["200"].schema
         ) {
-          throw new Error("not have validate response schema");
+          const schema = responses["200"].schema;
+          const example = this.parseSchema(schema);
+          this.pathInfo.push({
+            path,
+            method,
+            example
+          });
         }
-        const schema = responses['200'].schema
-        const example = this.parseSchema(schema)
-        this.pathInfo.push({
-          path,
-          method,
-          example
-        })
-      })
-    })
+      });
+    });
   }
 
   parseSchema(schema) {
     switch (schema.type) {
       case "array":
-        return this.generateArrayMock(schema)
+        return this.generateArrayMock(schema);
       case "object":
-        return this.generateObjectMock(schema)
+        return this.generateObjectMock(schema);
       case "string":
-        return this.generateStringMock(schema)
+        return this.generateStringMock(schema);
       case "number":
       case "integer":
-        return this.generateNumberMock(schema)
+        return this.generateNumberMock(schema);
       default:
-        return this.generateNormalMock(schema)
+        return this.generateNormalMock(schema);
     }
   }
 
   generateArrayMock(schema) {
-    const example = []
-    const max = schema.maxItems ? schema.maxItems : 10
-    const min = schema.minItems ? schema.minItems : 1
-    const count = choice(min, max)
-    const childSchema = schema.items
+    const example = [];
+    const max = schema.maxItems ? schema.maxItems : 10;
+    const min = schema.minItems ? schema.minItems : 1;
+    const count = choice(min, max);
+    const childSchema = schema.items;
     for (let i = 0; i < count; i++) {
-      const childExample = this.parseSchema(childSchema)
-      example.push(childExample)
+      const childExample = this.parseSchema(childSchema);
+      example.push(childExample);
     }
-    return example
+    return example;
   }
 
-  generateObjectMock({
-    properties
-  }) {
-    const example = {}
+  generateObjectMock({ properties }) {
+    const example = {};
     _.each(properties, (childSchema, prop) => {
-      const childExample = this.parseSchema(childSchema)
-      example[prop] = childExample
-    })
-    return example
+      const childExample = this.parseSchema(childSchema);
+      example[prop] = childExample;
+    });
+    return example;
   }
 
   generateStringMock(schema) {
-    if (schema.example) return schema.example
-    var max = schema.maxLength ? schema.maxLength : 20
-    var min = schema.minLength ? schema.minLength : 5
-    var final = `@string("lower", ${min}, ${max})`
+    if (schema.example) return schema.example;
+    var max = schema.maxLength ? schema.maxLength : 20;
+    var min = schema.minLength ? schema.minLength : 5;
+    var final = `@string("lower", ${min}, ${max})`;
     if (schema.pattern) {
-      final = `@regexstring(${schema.pattern}, ${min}, ${max})`
+      final = `@regexstring(${schema.pattern}, ${min}, ${max})`;
     } else if (schema.format) {
-      const format = schema.format
-      if (format === 'email') {
-        final = `@email`
-      } else if (format === 'url') {
-        final = `@url`
-      } else if (format === 'date') {
-        final = `@date`
-      } else if (format === 'date-time') {
-        final = `@xdatetime`
-      } else if (format === 'byte') {
-        final = `@dataImage`
+      const format = schema.format;
+      if (format === "email") {
+        final = `@email`;
+      } else if (format === "url") {
+        final = `@url`;
+      } else if (format === "date") {
+        final = `@date`;
+      } else if (format === "date-time") {
+        final = `@xdatetime`;
+      } else if (format === "byte") {
+        final = `@dataImage`;
       }
     }
     if (schema.enum) {
-      final = `@pick([${schema.enum}])`
+      final = `@pick([${schema.enum}])`;
     }
-    return final
+    return final;
   }
 
   generateNumberMock(schema) {
-    const max = schema.maximum ? schema.maximum : 65535
-    const min = schema.minimum ? schema.minimum : 0
-    let final = `@integer(${min}, ${max})`
-    if (schema.format === 'float' || schema.format === 'double') {
-      final = `@float(${min}, ${max})`
+    const max = schema.maximum ? schema.maximum : 65535;
+    const min = schema.minimum ? schema.minimum : 0;
+    let final = `@integer(${min}, ${max})`;
+    if (schema.format === "float" || schema.format === "double") {
+      final = `@float(${min}, ${max})`;
     }
     if (schema.enum) {
-      final = `@pick([${schema.enum}])`
+      final = `@pick([${schema.enum}])`;
     }
-    return final
+    return final;
   }
 
   generateNormalMock(schema) {
-    const type = schema.type
-    return '@' + type
+    const type = schema.type;
+    return "@" + type;
   }
 
-  resolveRef(ref) {
-
-  }
+  resolveRef(ref) {}
 
   mock(path, method, data) {
     _.some(this.pathInfo, val => {
       if (val.path === path && val.method === method) {
         if (_.isArray(val.example)) {
-          data = _.isArray(data) ? data : [data]
+          data = _.isArray(data) ? data : [data];
           val.example.forEach(item => {
-            _.assign(item, data[0])
-          })
+            _.assign(item, data[0]);
+          });
         } else {
-          data = _.isObject(data) ? data : {}
-          _.assign(val.example, data)
+          data = _.isObject(data) ? data : {};
+          _.assign(val.example, data);
         }
-        return true
+        return true;
       }
-    })
-    return this
+    });
+    return this;
   }
 
-  mockMany(paths, methods, datas) {
+  mockMulti(paths, methods, datas) {}
 
-  }
+  register(mockdata) {}
 }
 
-module.exports = Body
+module.exports = Body;

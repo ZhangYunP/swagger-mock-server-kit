@@ -6,21 +6,30 @@ const cors = require("cors");
 const proxy = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const multer = require("multer");
-const fs = require('fs')
-const yaml = require("js-yaml")
-const RandExp = require('randexp');
+const fs = require("fs");
+const yaml = require("js-yaml");
+const RandExp = require("randexp");
 const setupMiddleware = require("./setup-middleware");
-const {
-  multerOptions
-} = require("../config");
+const { multerOptions } = require("../config");
 
 const log = console.log;
 const upload = multer(multerOptions);
+let count = 0;
 
 const isvalidatePort = port => {
-  port = parseInt(port, 10)
-  return !isNaN(port) && (port > 0 && port < 65535)
-}
+  port = parseInt(port, 10);
+  return !isNaN(port) && (port > 0 && port < 65535);
+};
+
+const removeYamlQuote = yamlfile => {
+  return yamlfile.replace(/['"]/g, m => {
+    count++;
+    if (count > 2) {
+      return "";
+    }
+    return m;
+  });
+};
 
 const formatConfig = (config = {}) => {
   if (!config.appRoot) {
@@ -45,30 +54,24 @@ const tojsonPointer = path => {
 
 const sadd = (set, data) => {
   data.forEach(d => {
-    set.add(d)
-  })
-}
+    set.add(d);
+  });
+};
 
-const formatResultMessage = ({
-  errors,
-  warnings
-}, log) => {
+const formatResultMessage = ({ errors, warnings }, log) => {
   if (errors.length) {
     errors.forEach(error => {
-      let {
-        code,
-        path,
-        message
-      } = error;
+      let { code, path, message } = error;
       path = "#/" + tojsonPointer(path);
       log.elog(
         "error: ",
         "apidoc error occurr at " +
-        path +
-        ", errcode: " +
-        code +
-        ", errormessage: " +
-        message
+          path +
+          ", code: " +
+          code +
+          ", message: " +
+          message +
+          ", a json schema for swagger 2.0 API at: http://swagger.io/v2/schema.json#"
       );
     });
     log.elog("error: ", "errors number: " + errors.length);
@@ -76,20 +79,16 @@ const formatResultMessage = ({
 
   if (warnings.length) {
     warnings.forEach(warning => {
-      const {
-        code,
-        path,
-        message
-      } = warning;
+      const { code, path, message } = warning;
       path = "#/" + this.tojsonPointer(path);
       log.warning(
         "warning: ",
         "apidoc warning occurr at " +
-        path +
-        ", errcode: " +
-        code +
-        ", errormessage: " +
-        message
+          path +
+          ", code: " +
+          code +
+          ", message: " +
+          message
       );
     });
     log.warning("warning: ", "warnings number: " + warnings.length);
@@ -100,16 +99,13 @@ const formatResultMessage = ({
   }
 };
 
-const findServerConfig = ({
-  host = "",
-  basePath = "/api/v1"
-}) => {
+const findServerConfig = ({ host = "", basePath = "/api/v1" }) => {
   let port;
   const parts = host.split(":");
   if (!parts[1]) {
-    throw new Error('port must be provided')
+    throw new Error("port must be provided");
   }
-  port = Number(parts[1])
+  port = Number(parts[1]);
 
   return {
     port,
@@ -119,13 +115,15 @@ const findServerConfig = ({
 
 const setStaticPath = (app, staticPath, baseUrl) => {
   app.use(express.static(staticPath));
-  app.use(baseUrl, express.static(path.join(staticPath, 'public')))
+  app.use(baseUrl, express.static(path.join(staticPath, "public")));
 };
 
 const parseBody = app => {
-  app.use(bodyParser.urlencoded({
-    extended: false
-  }));
+  app.use(
+    bodyParser.urlencoded({
+      extended: false
+    })
+  );
 
   app.use(bodyParser.json());
 };
@@ -135,7 +133,7 @@ const parseForm = app => {
 };
 
 const setupNeededMiddleware = (app, opts) => {
-  opts.consumes = opts.consumes || []
+  opts.consumes = opts.consumes || [];
   opts.consumes.forEach(mime => {
     if (mime.indexOf("urlencoded")) {
       parseBody(app);
@@ -146,10 +144,10 @@ const setupNeededMiddleware = (app, opts) => {
   setStaticPath(app, opts.path, opts.baseUrl);
 };
 
-const genRegexString = (regExp) => {
-  if (!(regExp instanceof RegExp)) regExp = new RegExp(regExp)
-  return new RandExp(regExp).gen()
-}
+const genRegexString = regExp => {
+  if (!(regExp instanceof RegExp)) regExp = new RegExp(regExp);
+  return new RandExp(regExp).gen();
+};
 
 const installMiddleware = (app, config) => {
   app.use(cors());
@@ -175,7 +173,7 @@ const getSwaggerDocument = docFilename => {
 
   try {
     if (ext === ".yaml") {
-      swaggerDocument = yaml.safeLoad(fs.readFileSync(docFilename))
+      swaggerDocument = yaml.safeLoad(fs.readFileSync(docFilename));
     } else {
       swaggerDocument = require(docFilename);
     }
@@ -185,10 +183,10 @@ const getSwaggerDocument = docFilename => {
   return swaggerDocument;
 };
 
-const getBasePath = (docFilename) => {
-  const doc = getSwaggerDocument(docFilename)
-  return doc.basePath
-}
+const getBasePath = docFilename => {
+  const doc = getSwaggerDocument(docFilename);
+  return doc.basePath;
+};
 
 const error = (string, metadata) => void log(chalk.red(string), metadata);
 
@@ -197,41 +195,42 @@ const success = (string, metadata) => void log(chalk.green(string), metadata);
 const warning = (string, metadata) => void log(chalk.yellow(string), metadata);
 
 const choice = (min, max) => {
-  const count = Math.max(min, Math.floor(Math.random() * max))
-  return count
-}
+  const count = Math.max(min, Math.floor(Math.random() * max));
+  return count;
+};
 
 const getFixString = (string, min, max) => {
-  const length = choice(min, max)
+  const length = choice(min, max);
   if (string.length < length) {
-    string = string + '.'.repeat(length - string.length)
+    string = string + ".".repeat(length - string.length);
   } else if (string.length > length) {
-    string = string.substr(0, length)
+    string = string.substr(0, length);
   }
-  return string
-}
+  return string;
+};
 
-const findAssets = (assetPath) => {
+const findAssets = assetPath => {
   if (!fs.existsSync(assetPath)) {
-    throw new Error('can not found assetPath: ' + assetPath)
+    throw new Error("can not found assetPath: " + assetPath);
   }
-  const assets = []
-  const stat = fs.statSync(assetPath)
+  const assets = [];
+  const stat = fs.statSync(assetPath);
   if (stat.isDirectory()) {
-    const files = fs.readdirSync(assetPath)
+    const files = fs.readdirSync(assetPath);
     files.forEach(file => {
-      const dist = path.join(assetPath, file)
+      const dist = path.join(assetPath, file);
       if (fs.statSync(dist).isFile()) {
-        assets.push(file)
+        assets.push(file);
       }
-    })
+    });
   }
-  return assets
-}
+  return assets;
+};
 
 module.exports = {
   formatConfig,
   getSwaggerDocument,
+  removeYamlQuote,
   findServerConfig,
   setupNeededMiddleware,
   formatResultMessage,

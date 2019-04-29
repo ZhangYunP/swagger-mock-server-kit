@@ -65,5 +65,20 @@ paths:
                   type: string
                 isValidate:
                   type: boolean
-                userImg:
-                  type: string
+  '/users/{userId}':
+    get:
+      summary: 获取一个用户
+      parameters:
+        - in: path
+          name: userId
+          type: integer
+          required: true
+          description: 用户的id
+      responses:
+        '200':
+          description: 返回所有用户信息
+          schema:
+            type: object
+            properties:
+              userImg:
+                type: string

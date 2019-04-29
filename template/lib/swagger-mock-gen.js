@@ -2,8 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const sway = require("sway");
 const validateRquestMiddleware = require("../middlewares/validate-http");
-const Body = require('./body')
-const bus = require('./event-bus')
+const Body = require("./body");
+const bus = require("./event-bus");
 
 const {
   success,
@@ -12,22 +12,23 @@ const {
   formatResultMessage
 } = require("./utils");
 
-const {
-  validateRequest,
-  validateResponse,
-  mockExtPath
-} = require('../config')
+const { validateRequest, validateResponse, mockExtPath } = require("../config");
 
 const registerValidateMiddleWare = (app, api, baseUrl) => {
-  app.use(baseUrl, validateRquestMiddleware(api, {
-    strictMode: false
-  }));
+  app.use(
+    baseUrl,
+    validateRquestMiddleware(api, {
+      strictMode: false
+    })
+  );
 };
 
 class MockRouter {
   constructor(opts = {}) {
     this.opts = this.formatopts(opts);
-    const mockPath = path.relative(this.opts.output, mockExtPath).replace(/\\/g, '/')
+    const mockPath = path
+      .relative(this.opts.output, mockExtPath)
+      .replace(/\\/g, "/");
     this.modStart = `
       const mock = require('${mockPath}')
 
@@ -39,7 +40,7 @@ class MockRouter {
     Object.assign(this, this.opts);
     this.dist = path.join(this.output, this.filename);
     this.api = null;
-    this.body = new Body()
+    this.body = new Body();
   }
 
   formatopts(opts) {
@@ -80,12 +81,11 @@ class MockRouter {
         throw new Error("invalid doc file");
       }
 
-      if (validateRequest) registerValidateMiddleWare(app, this.api, this.baseUrl);
+      if (validateRequest)
+        registerValidateMiddleWare(app, this.api, this.baseUrl);
 
-      const {
-        pathInfo
-      } = this.body
-      bus.emit(this.body)
+      const { pathInfo } = this.body;
+      bus.emit(this.body);
 
       const template = this.generateTemplate(pathInfo);
 
@@ -107,11 +107,7 @@ class MockRouter {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({
-      path,
-      method,
-      example
-    }) => {
+    pathinfo.forEach(({ path, method, example }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
