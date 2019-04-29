@@ -1,7 +1,6 @@
 {
   "name": "swagger-mock-server",
   "version": "0.0.1",
-  "private": true,
   "description": "this is module that create a mock server by swagger doc",
   "keywords": [
     "swagger",
