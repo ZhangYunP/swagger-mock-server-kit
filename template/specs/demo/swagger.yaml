@@ -67,16 +67,3 @@ paths:
                   type: boolean
                 userImg:
                   type: string
-  '/user/{userId}':
-    get:
-      parameters:
-        - name: userId
-          in: path
-          type: integer
-      responses:
-        '200':
-          schema:
-            type: object
-            properties:
-              userImg:
-                type: string

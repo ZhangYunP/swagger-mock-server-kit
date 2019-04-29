@@ -1,9 +1,10 @@
 module.exports = body => {
   body
     .mock("/users", "get", [{
-      avatar: "@image"
+      avatar: "@image",
+      userImg: '@ximage'
     }])
-    .mock("/user/{userId}", "get", {
-      userImg: '/api/v1/dumpimg1.jpg'
-    })
+  // .mock("/user/{userId}", "get", {
+  //   userImg: '@ximage'
+  // })
 };

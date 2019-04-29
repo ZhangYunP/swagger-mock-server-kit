@@ -7,6 +7,7 @@ const proxy = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const fs = require('fs')
+const yaml = require("js-yaml")
 const RandExp = require('randexp');
 const setupMiddleware = require("./setup-middleware");
 const {
@@ -174,7 +175,6 @@ const getSwaggerDocument = docFilename => {
 
   try {
     if (ext === ".yaml") {
-      const yaml = require("js-yaml");
       swaggerDocument = yaml.safeLoad(fs.readFileSync(docFilename))
     } else {
       swaggerDocument = require(docFilename);
@@ -184,6 +184,11 @@ const getSwaggerDocument = docFilename => {
   }
   return swaggerDocument;
 };
+
+const getBasePath = (docFilename) => {
+  const doc = getSwaggerDocument(docFilename)
+  return doc.basePath
+}
 
 const error = (string, metadata) => void log(chalk.red(string), metadata);
 
@@ -206,12 +211,31 @@ const getFixString = (string, min, max) => {
   return string
 }
 
+const findAssets = (assetPath) => {
+  if (!fs.existsSync(assetPath)) {
+    throw new Error('can not found assetPath: ' + assetPath)
+  }
+  const assets = []
+  const stat = fs.statSync(assetPath)
+  if (stat.isDirectory()) {
+    const files = fs.readdirSync(assetPath)
+    files.forEach(file => {
+      const dist = path.join(assetPath, file)
+      if (fs.statSync(dist).isFile()) {
+        assets.push(file)
+      }
+    })
+  }
+  return assets
+}
+
 module.exports = {
   formatConfig,
   getSwaggerDocument,
   findServerConfig,
   setupNeededMiddleware,
   formatResultMessage,
+  getBasePath,
   error,
   success,
   warning,
@@ -220,5 +244,6 @@ module.exports = {
   isvalidatePort,
   genRegexString,
   choice,
-  getFixString
+  getFixString,
+  findAssets
 };
