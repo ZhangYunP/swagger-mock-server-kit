@@ -148,6 +148,25 @@ class Body {
   }
 
   mock(path, method, data) {
+    _.some(this.pathInfo, (val, key) => {
+      if (val.path === path && val.method === method) {
+        if (_.isArray(val.example)) {
+          data = _.isArray(data) ? data : [data]
+          val.example.forEach(item => {
+            _.assign(item, data[0])
+          })
+        } else {
+          data = _.isObject(data) ? data : {}
+          _.assign(val.example, data)
+        }
+        return true
+      }
+    })
+    console.log(this.pathInfo[0]['example'])
+    return this
+  }
+
+  mockMany(paths, methods, datas) {
 
   }
 }

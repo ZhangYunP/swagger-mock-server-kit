@@ -12,13 +12,14 @@ const perparePlugin = () => {
   const remove = bus.on(body => {
     success("[info]  ", `start execute plugin`);
     plugins.forEach(plugin => {
+      let pluginModule
       try {
-        const pluginModule = require(plugin);
+        pluginModule = require(plugin);
         pluginModule(body);
       } catch (e) {
         throw e;
       }
-      success("[info]  ", `plugin ${p.name} install success`);
+      success("[info]  ", `plugin ${pluginModule.name} install success`);
     });
   });
   return remove

@@ -85,7 +85,7 @@ class MockRouter {
       const {
         pathInfo
       } = this.body
-      // bus.emit(this.body)
+      bus.emit(this.body)
 
       const template = this.generateTemplate(pathInfo);
 
