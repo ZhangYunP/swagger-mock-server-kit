@@ -52,7 +52,7 @@ class Body {
 
   parseSchema(schema) {
     if (schema.$ref) {
-      schema = this.resolveRef(schema.$ref);
+      this.resolveRef(schema.$ref);
     }
     switch (schema.type) {
       case "array":
@@ -144,7 +144,6 @@ class Body {
       for (let i = 0; i < paths.length; i++) {
         root = root[paths[i]];
       }
-      return root;
     }
   }
 
