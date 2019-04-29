@@ -1,5 +1,4 @@
 const fs = require("fs");
-const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
 const validateRquestMiddleware = require("../middlewares/validate-http");
@@ -28,8 +27,7 @@ const registerValidateMiddleWare = (app, api, baseUrl) => {
 class MockRouter {
   constructor(opts = {}) {
     this.opts = this.formatopts(opts);
-    const routesPath = path.join(this.opts.output)
-    const mockPath = path.relative(routesPath, mockExtPath).replace(/\\/g, '/')
+    const mockPath = path.relative(this.opts.output, mockExtPath).replace(/\\/g, '/')
     this.modStart = `
       const mock = require('${mockPath}')
 

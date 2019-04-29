@@ -147,15 +147,9 @@ class Body {
 
   }
 
-  find(path) {
+  mock(path, method, data) {
 
   }
-
-  method(method = "get") {
-
-  }
-
-  mock(data) {}
 }
 
 module.exports = Body
