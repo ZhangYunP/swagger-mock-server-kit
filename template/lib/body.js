@@ -148,7 +148,7 @@ class Body {
   }
 
   mock(path, method, data) {
-    _.some(this.pathInfo, (val, key) => {
+    _.some(this.pathInfo, val => {
       if (val.path === path && val.method === method) {
         if (_.isArray(val.example)) {
           data = _.isArray(data) ? data : [data]
@@ -162,7 +162,6 @@ class Body {
         return true
       }
     })
-    console.log(this.pathInfo[0]['example'])
     return this
   }
 
