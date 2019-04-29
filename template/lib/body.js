@@ -51,6 +51,9 @@ class Body {
   }
 
   parseSchema(schema) {
+    if (schema.$ref) {
+      schema = this.resolveRef(schema.$ref);
+    }
     switch (schema.type) {
       case "array":
         return this.generateArrayMock(schema);
@@ -133,7 +136,17 @@ class Body {
     return "@" + type;
   }
 
-  resolveRef(ref) {}
+  resolveRef(ref) {
+    let root = this.doc;
+    const parts = ref.split("#");
+    if (!parts[0]) {
+      const paths = parts[1].split("/").slice(1);
+      for (let i = 0; i < paths.length; i++) {
+        root = root[paths[i]];
+      }
+      return root;
+    }
+  }
 
   mock(path, method, data) {
     let notfound = false;
