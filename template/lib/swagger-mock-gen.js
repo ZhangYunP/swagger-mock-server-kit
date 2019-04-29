@@ -14,11 +14,12 @@ const {
 
 const { validateRequest, validateResponse, mockExtPath } = require("../config");
 
-const registerValidateMiddleWare = (app, api, baseUrl) => {
+const registerValidateMiddleWare = (app, api, baseUrl, notValidate) => {
   app.use(
     baseUrl,
     validateRquestMiddleware(api, {
-      strictMode: false
+      strictMode: false,
+      notValidate
     })
   );
 };
@@ -32,7 +33,8 @@ class MockRouter {
     this.modStart = `
       const mock = require('${mockPath}')
 
-      module.exports = (app, api, isvalidateRes) => {
+      module.exports = (app, api, isvalidateRes, notValidate) => {
+        
     `;
     this.modEnd = `
       }
@@ -81,18 +83,17 @@ class MockRouter {
         throw new Error("invalid doc file");
       }
 
-      if (validateRequest)
-        registerValidateMiddleWare(app, this.api, this.baseUrl);
-
-      const { pathInfo } = this.body;
       bus.emit(this.body);
+      const { pathInfo, notValidate } = this.body;
+
+      if (validateRequest)
+        registerValidateMiddleWare(app, this.api, this.baseUrl, notValidate);
 
       const template = this.generateTemplate(pathInfo);
 
       this.emitFile(template, err => {
         if (err) throw err;
-
-        this.setup(app, validateResponse, err => {
+        this.setup(app, validateResponse, notValidate, err => {
           if (err) throw err;
           success("[info]  ", "register mockdata router success");
         });
@@ -112,27 +113,31 @@ class MockRouter {
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
         ":$1"
-      )}', (req, res) => {
-        if (isvalidateRes) {
-          const operation = api.getOperation(req);
-          const responseData = {
-            body: mock(${JSON.stringify(example)}),
-            statusCode: res.statusCode
-          }
-          const results = operation.validateResponse(responseData);
-    
-          if (!results.errors.length && !results.warnings.length) {
-            res.json(mock(${JSON.stringify(example)}));
+      )}', (req, res, next) => {
+          if (!notValidate.includes("${path}")) {
+            if (isvalidateRes) {
+              const operation = api.getOperation(req);
+              const responseData = {
+                body: mock(${JSON.stringify(example)}),
+                statusCode: res.statusCode
+              }
+              const results = operation.validateResponse(responseData);
+        
+              if (!results.errors.length && !results.warnings.length) {
+                res.json(mock(${JSON.stringify(example)}));
+              } else {
+                res.status(400).json({
+                  code: 40002,
+                  message: "invalidate response",
+                  error: results.errors
+                })
+              }
+            } else {
+                res.json(mock(${JSON.stringify(example)}));
+            }
           } else {
-            res.status(400).json({
-              code: 40002,
-              message: "invalidate response",
-              error: results.errors
-            })
-          }
-        } else {
             res.json(mock(${JSON.stringify(example)}));
-        }
+          }
          })
        `;
     });
@@ -151,12 +156,12 @@ class MockRouter {
     cb(null);
   }
 
-  setup(app, validateResponse, cb) {
+  setup(app, validateResponse, notValidate, cb) {
     if (!fs.existsSync(this.dist)) {
       cb(new Error("not found mockroute in dist"));
     }
     const registerRoute = require(this.dist);
-    registerRoute(app, this.api, validateResponse);
+    registerRoute(app, this.api, validateResponse, notValidate);
     cb(null);
   }
 }

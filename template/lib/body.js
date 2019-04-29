@@ -10,6 +10,7 @@ class Body {
   constructor(opts = {}) {
     this.opts = opts;
     this.pathInfo = [];
+    this.notValidate = [];
     this.init();
   }
 
@@ -179,6 +180,7 @@ class Body {
       method,
       example: data
     });
+    this.notValidate.push(path);
   }
 
   clear() {

@@ -16,8 +16,8 @@ const multerOptions = {
   dest: "upload/"
 };
 
-const validateRequest = false;
-const validateResponse = false;
+const validateRequest = true;
+const validateResponse = true;
 
 module.exports = {
   appRoot,
