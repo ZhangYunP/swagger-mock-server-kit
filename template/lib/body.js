@@ -1,13 +1,20 @@
-const { mock } = require("mockjs");
+const {
+  mock
+} = require("mockjs");
 const _ = require("lodash");
 const fs = require("fs");
 const path = requrie("path");
-const { safeLoad } = require("js-yaml");
-const { docFilename } = require("../config");
+const {
+  safeLoad
+} = require("js-yaml");
+const {
+  docFilename
+} = require("../config");
 
 class Body {
   constructor(opts = {}) {
     this.opts = opts;
+    this.pathInfo = []
     this.init();
   }
 
@@ -35,7 +42,9 @@ class Body {
     this.method = method;
     if (!this.path[method])
       throw new Error("this route can not support this mehod: " + method);
-    const { responses = {} } = this.path[method];
+    const {
+      responses = {}
+    } = this.path[method];
     if (
       Object.keys(responses).length === 0 ||
       !responses["200"] ||
@@ -48,3 +57,5 @@ class Body {
 
   mock(data) {}
 }
+
+module.exports = Body

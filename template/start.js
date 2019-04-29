@@ -1,5 +1,6 @@
 const path = require("path");
 const express = require("express");
+const FallbackPort = require('fallback-port')
 const MockRouter = require("./lib/swagger-mock-gen");
 const formatDoc = require('./lib/format-doc')
 const config = require("./config");
@@ -24,9 +25,9 @@ const {
   plugins
 } = baseconfig;
 
-let swaggerDocument = getSwaggerDocument(docFilename);
+const swaggerDocument = getSwaggerDocument(docFilename);
 
-swaggerDocument = formatDoc(swaggerDocument, docFilename, mockhost, {
+const formatDocument = formatDoc(swaggerDocument, docFilename, mockhost, {
   slog,
   elog
 })
@@ -35,12 +36,16 @@ const {
   port,
   baseUrl,
   consumes
-} = findServerConfig(swaggerDocument);
+} = findServerConfig(formatDocument);
 
+const fallbackPort = new FallbackPort(port)
+const nowPort = fallbackPort.getPort()
+if (port !== nowPort) {
+  slog('[info]  ', `port ${port} is taken and fallback port ${nowPort}`)
+}
 const docRelative = path.relative(appRoot, docFilename);
-const docPath = docRelative.replace(/\\/, "/");
-
-const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
+const docPath = docRelative.replace(/\\/g, "/");
+const swaggerDocUlr = `http://localhost:${nowPort}/${docPath}`;
 
 const app = express();
 
@@ -58,10 +63,11 @@ const mockRouter = new MockRouter({
 });
 
 var removePlugin
-app.listen(port, async err => {
+app.listen(nowPort, async err => {
   if (err) elog("error: ", err);
-  slog("[info]  ", "register mockdate router, using " + docPath);
+  removePlugin = preparePlugin()
 
+  slog("[info]  ", "register mockdate router, using " + docPath);
   await mockRouter.init(app);
 
   installMiddleware(app, {
@@ -70,16 +76,14 @@ app.listen(port, async err => {
     baseUrl
   });
 
-  removePlugin = preparePlugin()
-
   slog(
     "[info]  ",
-    "swagger ui doc url is: http://localhost:" + port + docUIPath
+    "swagger ui doc url is: http://localhost:" + nowPort + docUIPath
   );
 
   slog(
     "[success]  ",
-    `mock server is starting at ${port}, you can get mock data on ${baseUrl}`
+    `mock server is starting at ${nowPort}, you can get mock data on ${baseUrl}`
   );
 });
 

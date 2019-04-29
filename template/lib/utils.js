@@ -115,9 +115,9 @@ const findServerConfig = ({
   };
 };
 
-const setStaticPath = (app, path, baseUrl) => {
-  app.use(express.static(path));
-  app.use(baseUrl, express.static(path))
+const setStaticPath = (app, staticPath, baseUrl) => {
+  app.use(express.static(staticPath));
+  app.use(baseUrl, express.static(path.join(staticPath, 'public')))
 };
 
 const parseBody = app => {
