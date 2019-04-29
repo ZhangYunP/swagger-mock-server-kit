@@ -135,26 +135,56 @@ class Body {
   resolveRef(ref) {}
 
   mock(path, method, data) {
-    _.some(this.pathInfo, val => {
-      if (val.path === path && val.method === method) {
-        if (_.isArray(val.example)) {
-          data = _.isArray(data) ? data : [data];
-          val.example.forEach(item => {
-            _.assign(item, data[0]);
-          });
-        } else {
-          data = _.isObject(data) ? data : {};
-          _.assign(val.example, data);
+    let notfound = false;
+    if (arguments.length === 1 && _.isArray(arguments[0])) {
+      this.pathInfo = _.concat(this.pathInfo, arguments[0]);
+    } else {
+      notfound = _.some(this.pathInfo, val => {
+        if (val.path === path && val.method === method) {
+          if (_.isArray(val.example)) {
+            data = _.isArray(data) ? data : [data];
+            val.example.forEach(item => {
+              _.assign(item, data[0]);
+            });
+          } else {
+            data = _.isObject(data) ? data : {};
+            _.assign(val.example, data);
+          }
+          return true;
         }
-        return true;
+      });
+      if (!notfound) {
+        this.register(path, method, data);
       }
-    });
+    }
+
     return this;
   }
 
-  mockMulti(paths, methods, datas) {}
+  mockMulti(paths, method, datas) {
+    _.each(paths, (val, key) => {
+      if (datas.length === paths.length) {
+        this.mock(val, method, datas[key]);
+      } else if (_.isObject(datas)) {
+        this.mock(val, method, datas);
+      } else {
+        throw new Error("mock datas is invalid");
+      }
+    });
+  }
 
-  register(mockdata) {}
+  register(path, method, data) {
+    this.pathInfo.push({
+      path,
+      method,
+      example: data
+    });
+  }
+
+  clear() {
+    this.pathInfo = [];
+    return this;
+  }
 }
 
 module.exports = Body;

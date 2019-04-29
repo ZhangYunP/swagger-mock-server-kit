@@ -7,5 +7,8 @@ module.exports = body => {
     ])
     .mock("/users/{userId}", "get", {
       userImg: "@ximage"
+    })
+    .mock("/foo/bar", "get", {
+      hello: "world"
     });
 };
