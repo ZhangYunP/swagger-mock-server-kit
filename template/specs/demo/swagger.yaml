@@ -36,6 +36,9 @@ paths:
                 gender:
                   type: integer
                   format: int32
+                  enum:
+                    - 0
+                    - 1
                 email:
                   type: string
                   format: email
@@ -46,6 +49,10 @@ paths:
                 role:
                   type: integer
                   format: int32
+                  enum:
+                    - 0
+                    - 1
+                    - 2
                 phone:
                   type: string
                 create_time:
@@ -54,5 +61,7 @@ paths:
                 update_time:
                   type: string
                   format: date
+                info:
+                  type: string
                 isValidate:
                   type: boolean

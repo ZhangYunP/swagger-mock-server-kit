@@ -3,6 +3,8 @@ const express = require("express");
 const MockRouter = require("./lib/swagger-mock-gen");
 const formatDoc = require('./lib/format-doc')
 const config = require("./config");
+const preparePlugin = require('./lib/setup-plugins')
+
 const {
   formatConfig,
   getSwaggerDocument,
@@ -41,6 +43,7 @@ const docPath = docRelative.replace(/\\/, "/");
 const swaggerDocUlr = `http://localhost:${port}/${docPath}`;
 
 const app = express();
+
 setupNeededMiddleware(app, {
   path: appRoot,
   baseUrl,
@@ -54,6 +57,7 @@ const mockRouter = new MockRouter({
   plugins
 });
 
+var removePlugin
 app.listen(port, async err => {
   if (err) elog("error: ", err);
   slog("[info]  ", "register mockdate router, using " + docPath);
@@ -65,6 +69,8 @@ app.listen(port, async err => {
     swaggerDocUlr,
     baseUrl
   });
+
+  removePlugin = preparePlugin()
 
   slog(
     "[info]  ",
@@ -79,10 +85,12 @@ app.listen(port, async err => {
 
 process.on("unhandledRejection", err => {
   elog("error: ", err);
+  removePlugin()
   process.exit(1);
 });
 
 process.on("uncaughtException", err => {
   elog("error: ", err);
+  removePlugin()
   process.exit(1);
 });
