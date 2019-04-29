@@ -6,9 +6,7 @@ const util = require("util");
 const asyncSpawn = require("../lib/async-spawn");
 const log = require("../lib/log");
 
-const {
-  root
-} = require("../config");
+const { root } = require("../config");
 
 const clean = util.promisify(rimraf);
 
@@ -19,11 +17,9 @@ function create(projectName = "swagger-mock-server", options) {
     log.success(
       "[info]  ",
       "execute create command, [projectName]: " +
-      projectName +
-      ", [--yarn]: " +
-      options.yarn ?
-      options.yarn :
-      "false"
+        projectName +
+        ", [--yarn]: " +
+        (options.yarn ? options.yarn : "false")
     );
 
     const distDir = path.join(process.cwd(), projectName);
@@ -46,7 +42,7 @@ function create(projectName = "swagger-mock-server", options) {
     try {
       await fs.copy(sourceDir, distDir);
     } catch (e) {
-      log.error(e)
+      log.error(e);
       throw e;
     }
 
