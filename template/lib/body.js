@@ -52,8 +52,7 @@ class Body {
 
   parseSchema(schema) {
     if (schema.$ref) {
-      console.log(schema.$ref);
-      this.resolveRef(schema.$ref);
+      schema = this.resolveRef(schema.$ref);
     }
     switch (schema.type) {
       case "array":
@@ -114,7 +113,7 @@ class Body {
       }
     }
     if (schema.enum) {
-      final = `@pick([${schema.enum}])`;
+      final = `@pick(${schema.enum})`;
     }
     return final;
   }
@@ -127,7 +126,7 @@ class Body {
       final = `@float(${min}, ${max})`;
     }
     if (schema.enum) {
-      final = `@pick([${schema.enum}])`;
+      final = `@pick(${schema.enum})`;
     }
     return final;
   }
@@ -138,13 +137,14 @@ class Body {
   }
 
   resolveRef(ref) {
-    let root = this.doc;
+    let root = _.cloneDeep(this.doc);
     const parts = ref.split("#");
     if (!parts[0]) {
       const paths = parts[1].split("/").slice(1);
       for (let i = 0; i < paths.length; i++) {
         root = root[paths[i]];
       }
+      return root;
     }
   }
 
