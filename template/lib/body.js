@@ -1,9 +1,15 @@
 const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");
-const { safeLoad } = require("js-yaml");
-const { choice } = require("./utils");
-const { docFilename } = require("../config");
+const {
+  safeLoad
+} = require("js-yaml");
+const {
+  choice
+} = require("./utils");
+const {
+  docFilename = 'swagger.yaml'
+} = require("../config");
 
 // base on JSON Schema Draft 4
 class Body {
@@ -11,10 +17,13 @@ class Body {
     this.opts = opts;
     this.pathInfo = [];
     this.notValidate = [];
-    this.init();
+    this.init(this.opts.hasSwaggerDoc);
   }
 
-  init() {
+  init(shouleParseSwaggerDoc) {
+    if (!shouleParseSwaggerDoc) {
+      return
+    }
     if (!fs.existsSync(docFilename))
       throw new Error("not exists file: " + docFilename);
     const ext = path.extname(docFilename);
@@ -32,7 +41,9 @@ class Body {
 
   parseDoc(doc) {
     _.each(doc.paths, (pathinfo, path) => {
-      _.each(pathinfo, ({ responses = {} }, method) => {
+      _.each(pathinfo, ({
+        responses = {}
+      }, method) => {
         if (
           _.keys(responses).length !== 0 &&
           responses["200"] &&
@@ -82,7 +93,9 @@ class Body {
     return example;
   }
 
-  generateObjectMock({ properties }) {
+  generateObjectMock({
+    properties
+  }) {
     const example = {};
     _.each(properties, (childSchema, prop) => {
       const childExample = this.parseSchema(childSchema);
@@ -151,7 +164,7 @@ class Body {
   mock(path, method, data) {
     let notfound = false;
     if (arguments.length === 1 && _.isArray(arguments[0])) {
-      this.pathInfo = _.concat(this.pathInfo, arguments[0]);
+      this.pathInfo = _.concat((this.pathInfo || []), arguments[0]);
     } else {
       notfound = _.some(this.pathInfo, val => {
         if (val.path === path && val.method === method) {

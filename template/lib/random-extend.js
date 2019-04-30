@@ -4,15 +4,19 @@ const {
   genRegexString,
   getFixString,
   getBasePath,
-  findAssets
+  findAssets,
+  notFoundFile,
+  baseUrl
 } = require('./utils')
 
 const {
-  docFilename,
-  publicPath
+  docFilename = '',
+    publicPath
 } = require('../config')
 
-const basePath = getBasePath(docFilename)
+const notDoc = notFoundFile(docFilename)
+
+const basePath = notDoc === true ? baseUrl : getBasePath(docFilename)
 const assets = findAssets(publicPath)
 
 Mock.Random.extend({

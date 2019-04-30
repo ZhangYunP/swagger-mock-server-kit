@@ -1,9 +1,15 @@
-const { resolve } = require("path");
+const {
+  resolve
+} = require("path");
 
-const pluginPath = resolve(__dirname, "../plugins");
+const appRoot = resolve(__dirname, "..");
+
+const pluginPath = resolve(appRoot, "plugins");
 
 const demoplugin = resolve(pluginPath, "random-image.js");
 
 module.exports = {
-  plugins: [demoplugin]
+  plugins: [demoplugin],
+
+  docFilename: resolve(appRoot, "specs/demo/swagger.yaml")
 };

@@ -10,7 +10,9 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const RandExp = require("randexp");
 const setupMiddleware = require("./setup-middleware");
-const { multerOptions } = require("../config");
+const {
+  multerOptions
+} = require("../config");
 
 const log = console.log;
 const upload = multer(multerOptions);
@@ -35,11 +37,10 @@ const formatConfig = (config = {}) => {
   if (!config.appRoot) {
     throw new Error("appRoot is required");
   }
-  config.docFilename = config.docFilename || "swagger.yaml";
+  config.docFilename = config.docFilename || 'swagger.yaml';
   if (!path.isAbsolute(config.docFilename)) {
     config.docFilename = path.resolve(config.appRoot, config.docFilename);
   }
-  config.docUIPath = config.docUIPath || "/api-docs";
   config.plugins = config.plugins || [];
   return config;
 };
@@ -58,20 +59,27 @@ const sadd = (set, data) => {
   });
 };
 
-const formatResultMessage = ({ errors, warnings }, log) => {
+const formatResultMessage = ({
+  errors,
+  warnings
+}, log) => {
   if (errors.length) {
     errors.forEach(error => {
-      let { code, path, message } = error;
+      let {
+        code,
+        path,
+        message
+      } = error;
       path = "#/" + tojsonPointer(path);
       log.elog(
         "error: ",
         "apidoc error occurr at " +
-          path +
-          ", code: " +
-          code +
-          ", message: " +
-          message +
-          ", a json schema for swagger 2.0 API at: http://swagger.io/v2/schema.json#"
+        path +
+        ", code: " +
+        code +
+        ", message: " +
+        message +
+        ", a json schema for swagger 2.0 API at: http://swagger.io/v2/schema.json#"
       );
     });
     log.elog("error: ", "errors number: " + errors.length);
@@ -79,16 +87,20 @@ const formatResultMessage = ({ errors, warnings }, log) => {
 
   if (warnings.length) {
     warnings.forEach(warning => {
-      const { code, path, message } = warning;
+      const {
+        code,
+        path,
+        message
+      } = warning;
       path = "#/" + this.tojsonPointer(path);
       log.warning(
         "warning: ",
         "apidoc warning occurr at " +
-          path +
-          ", code: " +
-          code +
-          ", message: " +
-          message
+        path +
+        ", code: " +
+        code +
+        ", message: " +
+        message
       );
     });
     log.warning("warning: ", "warnings number: " + warnings.length);
@@ -99,7 +111,10 @@ const formatResultMessage = ({ errors, warnings }, log) => {
   }
 };
 
-const findServerConfig = ({ host = "", basePath = "/api/v1" }) => {
+const findServerConfig = ({
+  host = "",
+  basePath = "/api/v1"
+}) => {
   let port;
   const parts = host.split(":");
   if (!parts[1]) {
@@ -112,6 +127,10 @@ const findServerConfig = ({ host = "", basePath = "/api/v1" }) => {
     baseUrl: basePath
   };
 };
+
+const notFoundFile = (path) => {
+  return !fs.existsSync(path)
+}
 
 const setStaticPath = (app, staticPath, baseUrl) => {
   app.use(express.static(staticPath));
@@ -178,7 +197,10 @@ const getSwaggerDocument = docFilename => {
       swaggerDocument = require(docFilename);
     }
   } catch (e) {
-    throw e;
+    if (e.code === 'ENOENT') {
+      error('error: ', 'not doc file')
+    }
+    throw e
   }
   return swaggerDocument;
 };
@@ -229,6 +251,7 @@ const findAssets = assetPath => {
 
 module.exports = {
   formatConfig,
+  notFoundFile,
   getSwaggerDocument,
   removeYamlQuote,
   findServerConfig,

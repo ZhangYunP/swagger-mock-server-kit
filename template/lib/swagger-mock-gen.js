@@ -12,7 +12,11 @@ const {
   formatResultMessage
 } = require("./utils");
 
-const { validateRequest, validateResponse, mockExtPath } = require("../config");
+const {
+  validateRequest,
+  validateResponse,
+  mockExtPath
+} = require("../config");
 
 const registerValidateMiddleWare = (app, api, baseUrl, notValidate) => {
   app.use(
@@ -42,16 +46,18 @@ class MockRouter {
     Object.assign(this, this.opts);
     this.dist = path.join(this.output, this.filename);
     this.api = null;
-    this.body = new Body();
+    this.body = new Body({
+      hasSwaggerDoc: this.hasSwaggerDoc
+    });
   }
 
   formatopts(opts) {
-    if (!opts.url) throw new Error("opts.url is required");
     opts.output =
       opts.output || path.join(opts.appRoot || process.cwd(), "routes");
     opts.filename = opts.filename || "mockRoutes.js";
     opts.blackList = opts.blackList || [];
-    opts.baseUrl = opts.baseUrl || "/api";
+    opts.baseUrl = opts.baseUrl || "/api/v1";
+    opts.hasSwaggerDoc = opts.hasSwaggerDoc === false ? false : true
     return opts;
   }
 
@@ -75,16 +81,21 @@ class MockRouter {
 
   async init(app) {
     try {
-      const isValidateDoc = await this.validateDoc({
-        definition: this.url
-      });
+      if (this.hasSwaggerDoc) {
+        const isValidateDoc = await this.validateDoc({
+          definition: this.url
+        });
 
-      if (!isValidateDoc) {
-        throw new Error("invalid doc file");
+        if (!isValidateDoc) {
+          throw new Error("invalid doc file");
+        }
       }
 
       bus.emit(this.body);
-      const { pathInfo, notValidate } = this.body;
+      const {
+        pathInfo,
+        notValidate
+      } = this.body;
 
       if (validateRequest)
         registerValidateMiddleWare(app, this.api, this.baseUrl, notValidate);
@@ -108,7 +119,11 @@ class MockRouter {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({ path, method, example }) => {
+    pathinfo.forEach(({
+      path,
+      method,
+      example
+    }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,

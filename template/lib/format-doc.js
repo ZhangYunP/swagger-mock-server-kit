@@ -1,10 +1,19 @@
 const fs = require("fs");
-const { extname } = require("path");
-const { safeDump } = require("js-yaml");
-const { sadd, isvalidatePort } = require("./utils");
+const {
+  extname
+} = require("path");
+const {
+  safeDump
+} = require("js-yaml");
+const {
+  sadd,
+  isvalidatePort
+} = require("./utils");
 
 module.exports = (doc, docPath, mockhost, log) => {
-  const { paths } = doc;
+
+  if (!doc.paths) throw new Error('doc.paths must be required, the doc is invalid')
+  const paths = doc.paths
 
   if (!~doc.host.indexOf(":") || !isvalidatePort(doc.host.split(":")[1])) {
     doc.host = doc.host.split(":")[0] + ":" + (process.env.PROT || 12121);
@@ -41,12 +50,16 @@ module.exports = (doc, docPath, mockhost, log) => {
   doc.produces = [...produces];
 
   const ext = extname(docPath);
-  if (ext === ".yaml") {
-    yamldoc = safeDump(doc);
+  try {
+    if (ext === ".yaml") {
+      yamldoc = safeDump(doc);
 
-    fs.writeFileSync(docPath, yamldoc);
-  } else {
-    fs.writeFileSync(docPath, JSON.stringify(doc, null, 4));
+      fs.writeFileSync(docPath, yamldoc);
+    } else {
+      fs.writeFileSync(docPath, JSON.stringify(doc, null, 4));
+    }
+  } catch (e) {
+    throw e
   }
 
   return doc;
