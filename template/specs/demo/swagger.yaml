@@ -1,24 +1,30 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
   version: 1.0.0
   title: swagger-doc-demo
-host: localhost:10101
+host: 'localhost:10101'
 basePath: /api/v1
 schemes:
-- http
+  - http
 consumes:
-- "application/json"
+  - application/json
+  - application/x-www-form-urlencoded
+  - application/octet-stream
+  - multipart/form-data
 produces:
-- "application/json"
+  - application/json
+  - application/octet-stream
 paths:
   /users:
     get:
       summary: 获取所有的用户
       responses:
-        200:
+        '200':
           description: 返回所有用户信息
           schema:
             type: array
+            maxItems: 10
+            minItems: 1
             items:
               type: object
               properties:
@@ -31,10 +37,11 @@ paths:
                   type: integer
                   format: int32
                   enum:
-                  - 0
-                  - 1
+                    - 0
+                    - 1
                 email:
                   type: string
+                  format: email
                 avatar:
                   type: string
                 nickname:
@@ -42,15 +49,36 @@ paths:
                 role:
                   type: integer
                   format: int32
+                  enum:
+                    - 0
+                    - 1
+                    - 2
                 phone:
-                  type: string 
+                  type: string
                 create_time:
                   type: string
                   format: date-time
                 update_time:
                   type: string
                   format: date-time
+                info:
+                  type: string
                 isValidate:
                   type: boolean
-      
-
+  '/users/{userId}':
+    get:
+      summary: 获取一个用户
+      parameters:
+        - in: path
+          name: userId
+          type: integer
+          required: true
+          description: 用户的id
+      responses:
+        '200':
+          description: 返回所有用户信息
+          schema:
+            type: object
+            properties:
+              userImg:
+                type: string

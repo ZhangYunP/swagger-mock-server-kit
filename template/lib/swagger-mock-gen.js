@@ -1,22 +1,44 @@
 const fs = require("fs");
-const parser = require("swagger-parser-mock");
 const path = require("path");
 const sway = require("sway");
+const validateRquestMiddleware = require("../middlewares/validate-http");
+const Body = require("./body");
+const bus = require("./event-bus");
+
+const {
+  success,
+  error: elog,
+  warning,
+  formatResultMessage
+} = require("./utils");
+
+const {
+  validateRequest,
+  validateResponse,
+  mockExtPath
+} = require("../config");
+
+const registerValidateMiddleWare = (app, api, baseUrl, notValidate) => {
+  app.use(
+    baseUrl,
+    validateRquestMiddleware(api, {
+      strictMode: false,
+      notValidate
+    })
+  );
+};
 
 class MockRouter {
   constructor(opts = {}) {
     this.opts = this.formatopts(opts);
+    const mockPath = path
+      .relative(this.opts.output, mockExtPath)
+      .replace(/\\/g, "/");
     this.modStart = `
-      const Mock = require('mockjs')
+      const mock = require('${mockPath}')
 
-      module.exports = app => {
-    `;
-    this.hookRoute = `
-        app.get('/api/foo', (req, res) => {
-          res.json({
-            bar: 'baz'
-          })
-        })
+      module.exports = (app, api, isvalidateRes, notValidate) => {
+        
     `;
     this.modEnd = `
       }
@@ -24,144 +46,117 @@ class MockRouter {
     Object.assign(this, this.opts);
     this.dist = path.join(this.output, this.filename);
     this.api = null;
+    this.body = new Body({
+      hasSwaggerDoc: this.hasSwaggerDoc
+    });
   }
 
   formatopts(opts) {
-    if (!opts.url) throw new Error("opts.url is required");
-    opts.output = opts.output || path.join(__dirname, "routes");
+    opts.output =
+      opts.output || path.join(opts.appRoot || process.cwd(), "routes");
     opts.filename = opts.filename || "mockRoutes.js";
     opts.blackList = opts.blackList || [];
-    opts.baseUrl = opts.baseUrl || "/api";
+    opts.baseUrl = opts.baseUrl || "/api/v1";
+    opts.hasSwaggerDoc = opts.hasSwaggerDoc === false ? false : true
     return opts;
   }
 
   async validateDoc(swayOpts) {
     try {
       const api = await sway.create(swayOpts);
-      const { errors, warnings } = await api.validate();
-      if (errors.length) {
-        errors.forEach(error => {
-          const { code, path, message } = error;
-          path = "#/" + path.join("");
-          console.log(
-            "apidoc error occurr at " +
-              path +
-              ", errcode: " +
-              code +
-              ", errormessage: " +
-              message
-          );
-        });
-        console.log("errors number: " + errors.length);
-        throw new Error("invalidate api doc!");
-      }
-
-      if (warnings.length) {
-        warnings.forEach(error => {
-          const { code, path, message } = error;
-          path = "#/" + path.join("");
-          console.log(
-            "apidoc warning occurr at " +
-              path +
-              ", errcode: " +
-              code +
-              ", errormessage: " +
-              message
-          );
-        });
-        console.log("warnings number: " + warnings.length);
-      }
-
-      if (!errors.length && !warnings.length) {
-        console.log("validate results: errors 0, warnings 0");
-      }
+      const results = await api.validate();
+      formatResultMessage(results, {
+        success,
+        elog,
+        warning
+      });
+      if (results.errors.length > 0) return false;
       this.api = api;
       return true;
     } catch (e) {
-      console.log(e);
+      elog("error: ", e);
       return false;
     }
   }
 
   async init(app) {
     try {
-      const isValidate = await this.validateDoc({
-        definition: this.url
-      });
+      if (this.hasSwaggerDoc) {
+        const isValidateDoc = await this.validateDoc({
+          definition: this.url
+        });
 
-      if (false) {
-        throw new Error("invalid doc file");
+        if (!isValidateDoc) {
+          throw new Error("invalid doc file");
+        }
       }
-      const paths = await this.parseDoc();
-      console.log(paths);
-      return;
-      const pathinfo = this.extractPathInfo(paths);
 
-      const template = this.generateTemplate(pathinfo);
+      bus.emit(this.body);
+      const {
+        pathInfo,
+        notValidate
+      } = this.body;
+
+      if (validateRequest)
+        registerValidateMiddleWare(app, this.api, this.baseUrl, notValidate);
+
+      const template = this.generateTemplate(pathInfo);
 
       this.emitFile(template, err => {
         if (err) throw err;
-
-        this.setup(app, err => {
+        this.setup(app, validateResponse, notValidate, err => {
           if (err) throw err;
-          console.log("register mockdata router success");
+          success("[info]  ", "register mockdata router success");
         });
       });
     } catch (e) {
+      elog("error: ", e);
       throw e;
     }
-  }
-
-  async parseDoc() {
-    try {
-      var paths = this.api.getPaths();
-      // var paths = parser(this.url);
-    } catch (e) {
-      throw e;
-    }
-    return paths;
-  }
-
-  extractPathInfo(paths) {
-    const pathinfo = [];
-
-    Object.keys(paths).forEach(path => {
-      if (~this.blackList.indexOf(path)) return;
-
-      Object.keys(paths[path]).forEach(method => {
-        const { responses } = paths[path][method];
-        if (!responses["200"]) return;
-
-        const {
-          example = {
-            foo: "bar"
-          }
-        } = responses["200"];
-        pathinfo.push({
-          path,
-          method,
-          example
-        });
-      });
-    });
-    return pathinfo;
   }
 
   generateTemplate(pathinfo) {
     let template = "";
     template += this.modStart;
 
-    pathinfo.forEach(({ path, method, example }) => {
+    pathinfo.forEach(({
+      path,
+      method,
+      example
+    }) => {
       template += `
          app.${method}('${this.baseUrl}${path.replace(
         /\{([^}]*)\}/g,
         ":$1"
-      )}', (req, res) => {
-           res.json(Mock.mock(${example}));
+      )}', (req, res, next) => {
+          if (!notValidate.includes("${path}")) {
+            if (isvalidateRes) {
+              const operation = api.getOperation(req);
+              const responseData = {
+                body: mock(${JSON.stringify(example)}),
+                statusCode: res.statusCode
+              }
+              const results = operation.validateResponse(responseData);
+        
+              if (!results.errors.length && !results.warnings.length) {
+                res.json(mock(${JSON.stringify(example)}));
+              } else {
+                res.status(400).json({
+                  code: 40002,
+                  message: "invalidate response",
+                  error: results.errors
+                })
+              }
+            } else {
+                res.json(mock(${JSON.stringify(example)}));
+            }
+          } else {
+            res.json(mock(${JSON.stringify(example)}));
+          }
          })
        `;
     });
-    template += this.hookRoute;
+
     template += this.modEnd;
 
     return template;
@@ -176,12 +171,12 @@ class MockRouter {
     cb(null);
   }
 
-  setup(app, cb) {
+  setup(app, validateResponse, notValidate, cb) {
     if (!fs.existsSync(this.dist)) {
       cb(new Error("not found mockroute in dist"));
     }
     const registerRoute = require(this.dist);
-    registerRoute(app);
+    registerRoute(app, this.api, validateResponse, notValidate);
     cb(null);
   }
 }
