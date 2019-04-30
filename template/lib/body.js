@@ -22,7 +22,7 @@ class Body {
 
   init(shouleParseSwaggerDoc) {
     if (!shouleParseSwaggerDoc) {
-      return
+      return;
     }
     if (!fs.existsSync(docFilename))
       throw new Error("not exists file: " + docFilename);
@@ -163,8 +163,19 @@ class Body {
 
   mock(path, method, data) {
     let notfound = false;
-    if (arguments.length === 1 && _.isArray(arguments[0])) {
-      this.pathInfo = _.concat((this.pathInfo || []), arguments[0]);
+    if (arguments.length === 1) {
+      if (_.isArray(arguments[0])) {
+        _.each(arguments[0], val => {
+          this.mock(val.path, val.method, val.data)
+        })
+      } else if (_.isObject(arguments[0])) {
+        const {
+          path,
+          method,
+          data
+        } = arguments[0]
+        this.mock(path, method, data)
+      }
     } else {
       notfound = _.some(this.pathInfo, val => {
         if (val.path === path && val.method === method) {
@@ -198,6 +209,17 @@ class Body {
         throw new Error("mock datas is invalid");
       }
     });
+  }
+
+  mockFromFile(file) {
+    const ext = path.extname(file)
+    if (ext !== '.json' || ext !== '.js') throw new Error('only support json or js mock file')
+    try {
+      const mockdata = require(file)
+      this.mock(mockdata)
+    } catch (e) {
+      throw e
+    }
   }
 
   register(path, method, data) {
