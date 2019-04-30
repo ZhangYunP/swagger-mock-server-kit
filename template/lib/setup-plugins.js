@@ -1,9 +1,7 @@
 const {
   plugins
 } = require("../config");
-
 const bus = require("../lib/event-bus");
-
 const {
   success
 } = require("../lib/utils");
@@ -11,16 +9,24 @@ const {
 const perparePlugin = () => {
   const remove = bus.on(body => {
     success("[info]  ", `start execute plugin`);
-    plugins.forEach(plugin => {
-      let pluginModule
+    const next = () => {
+      if (!plugins.length) {
+        success("[info]  ", `all plugins install success`)
+        return
+      }
+      const plugin = plugins.shift()
       try {
         pluginModule = require(plugin);
-        pluginModule(body);
+        const done = pluginModule(body);
+        if (done === true) {
+          success("[info]  ", `plugin ${pluginModule.name} install success`)
+          next()
+        }
       } catch (e) {
         throw e;
       }
-      success("[info]  ", `plugin ${pluginModule.name} install success`);
-    });
+    }
+    next()
   });
   return remove
 }

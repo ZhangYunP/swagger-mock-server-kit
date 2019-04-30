@@ -235,6 +235,10 @@ class Body {
     this.pathInfo = [];
     return this;
   }
+
+  done() {
+    return true
+  }
 }
 
 module.exports = Body;

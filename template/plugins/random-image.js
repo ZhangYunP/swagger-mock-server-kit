@@ -1,5 +1,5 @@
 module.exports = body => {
-  body
+  return body
     .mock("/users", "get", [{
       avatar: "@image"
     }])
@@ -16,5 +16,5 @@ module.exports = body => {
         hello: 'world'
       }
     })
-
+    .done()
 };
