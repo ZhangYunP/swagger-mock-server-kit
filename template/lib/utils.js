@@ -71,7 +71,7 @@ const formatResultMessage = ({
         message
       } = error;
       path = "#/" + tojsonPointer(path);
-      log.elog(
+      error(
         " error ",
         "apidoc error occurr at " +
         path +
@@ -82,7 +82,7 @@ const formatResultMessage = ({
         ", a json schema for swagger 2.0 API at: http://swagger.io/v2/schema.json#"
       );
     });
-    log.elog(" error ", "errors number: " + errors.length);
+    error(" error ", "errors number: " + errors.length);
   }
 
   if (warnings.length) {
@@ -93,7 +93,7 @@ const formatResultMessage = ({
         message
       } = warning;
       path = "#/" + this.tojsonPointer(path);
-      log.wlog(
+      warning(
         "warning: ",
         "apidoc warning occurr at " +
         path +
@@ -103,11 +103,11 @@ const formatResultMessage = ({
         message
       );
     });
-    log.wlog("warning: ", "warnings number: " + warnings.length);
+    warning("warning: ", "warnings number: " + warnings.length);
   }
 
   if (!errors.length && !warnings.length) {
-    log.slog(" info ", "validate succeed, results: errors 0, warnings 0");
+    success(" info ", "validate succeed, results: errors 0, warnings 0");
   }
 };
 

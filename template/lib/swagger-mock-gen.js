@@ -144,7 +144,7 @@ class MockRouter {
                 res.status(400).json({
                   code: 40002,
                   message: "invalidate response",
-                   error results.errors
+                   error: results.errors
                 })
               }
             } else {
