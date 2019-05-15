@@ -72,7 +72,7 @@ const formatResultMessage = ({
       } = error;
       path = "#/" + tojsonPointer(path);
       log.elog(
-        "error: ",
+        " error ",
         "apidoc error occurr at " +
         path +
         ", code: " +
@@ -82,7 +82,7 @@ const formatResultMessage = ({
         ", a json schema for swagger 2.0 API at: http://swagger.io/v2/schema.json#"
       );
     });
-    log.elog("error: ", "errors number: " + errors.length);
+    log.elog(" error ", "errors number: " + errors.length);
   }
 
   if (warnings.length) {
@@ -93,7 +93,7 @@ const formatResultMessage = ({
         message
       } = warning;
       path = "#/" + this.tojsonPointer(path);
-      log.warning(
+      log.wlog(
         "warning: ",
         "apidoc warning occurr at " +
         path +
@@ -103,11 +103,11 @@ const formatResultMessage = ({
         message
       );
     });
-    log.warning("warning: ", "warnings number: " + warnings.length);
+    log.wlog("warning: ", "warnings number: " + warnings.length);
   }
 
   if (!errors.length && !warnings.length) {
-    log.success("[info]  ", "validate succeed, results: errors 0, warnings 0");
+    log.slog(" info ", "validate succeed, results: errors 0, warnings 0");
   }
 };
 
@@ -198,7 +198,7 @@ const getSwaggerDocument = docFilename => {
     }
   } catch (e) {
     if (e.code === 'ENOENT') {
-      error('error: ', 'not doc file')
+      error(' error ', 'not doc file')
     }
     throw e
   }
@@ -210,11 +210,11 @@ const getBasePath = docFilename => {
   return doc.basePath;
 };
 
-const error = (string, metadata) => void log(chalk.red(string), metadata);
+const error = (string, metadata) => void log(chalk.bgRed(string), metadata);
 
-const success = (string, metadata) => void log(chalk.green(string), metadata);
+const success = (string, metadata) => void log(chalk.bgGreen(string), metadata);
 
-const warning = (string, metadata) => void log(chalk.yellow(string), metadata);
+const warning = (string, metadata) => void log(chalk.bgYellow(string), metadata);
 
 const choice = (min, max) => {
   const count = Math.max(min, Math.floor(Math.random() * max));

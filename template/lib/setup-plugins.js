@@ -8,10 +8,10 @@ const {
 
 const perparePlugin = () => {
   const remove = bus.on(body => {
-    success("[info]  ", `start execute plugin`);
+    success(" info ", `start execute plugin`);
     const next = () => {
       if (!plugins.length) {
-        success("[info]  ", `all plugins install success`)
+        success(" info ", `all plugins install success`)
         return
       }
       const plugin = plugins.shift()
@@ -19,7 +19,7 @@ const perparePlugin = () => {
         pluginModule = require(plugin);
         const done = pluginModule(body);
         if (done === true) {
-          success("[info]  ", `plugin ${pluginModule.name} install success`)
+          success(" info ", `plugin ${pluginModule.name} install success`)
           next()
         }
       } catch (e) {

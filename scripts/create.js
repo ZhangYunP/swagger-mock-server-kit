@@ -14,8 +14,8 @@ let spawnCmd;
 
 function create(projectName = "swagger-mock-server", options) {
   (async () => {
-    log.success(
-      "[info]  ",
+    log.slog(
+      " info ",
       "execute create command, [projectName]: " +
         projectName +
         ", [--yarn]: " +
@@ -25,14 +25,14 @@ function create(projectName = "swagger-mock-server", options) {
     const distDir = path.join(process.cwd(), projectName);
     if (fs.existsSync(distDir)) {
       await clean(distDir);
-      log.success("[info]  ", "delete distDir succeed");
+      log.slog(" info ", "delete distDir succeed");
     }
     fs.mkdirSync(distDir);
 
     const sourceDir = path.join(root, "template");
 
-    log.success(
-      "[info]  ",
+    log.slog(
+      " info ",
       "template path is: " + sourceDir + ", and will copy to " + distDir
     );
 
@@ -42,11 +42,11 @@ function create(projectName = "swagger-mock-server", options) {
     try {
       await fs.copy(sourceDir, distDir);
     } catch (e) {
-      log.error(e);
+      log.elog(e);
       throw e;
     }
 
-    log.success("[info]  ", "copy template to distDir succeed!");
+    log.slog(" info ", "copy template to distDir succeed!");
     await installDeps(options, distDir);
   })();
 }
@@ -60,18 +60,25 @@ async function installDeps(options, cwd = process.cwd()) {
   try {
     var spinner = ora("now install dependences , please wait...").start();
 
-    await asyncSpawn("installDeps", spawnCmd, ["install"], {
-      cwd
-    });
+    await asyncSpawn(
+      {
+        name: 'install-dependences'
+      },
+      spawnCmd,
+      ["install"],
+      {
+        cwd
+      }
+    );
 
     spinner.stop();
   } catch (e) {
     spinner.fail("project dependences install failed");
-    log.error("error: ", e);
+    log.elog(" error ", e);
     throw e;
   }
   spinner.succeed("project dependences install succeed!");
-  log.success("[info]  ", "create project sucess!");
+  log.slog(" info ", "create project sucess!");
   process.exit(0);
 }
 

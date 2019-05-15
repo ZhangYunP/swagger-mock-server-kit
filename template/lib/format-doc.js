@@ -43,8 +43,8 @@ module.exports = (doc, docPath, mockhost, log) => {
   sadd(consumes, existsConsumes);
   sadd(produces, existsProduces);
 
-  log.slog("[info]  ", "accept request content-type: " + [...consumes]);
-  log.slog("[info]  ", "accept response content-type: " + [...produces]);
+  log.slog(" info ", "accept request content-type: " + [...consumes]);
+  log.slog(" info ", "accept response content-type: " + [...produces]);
 
   doc.consumes = [...consumes];
   doc.produces = [...produces];

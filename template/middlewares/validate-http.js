@@ -1,7 +1,7 @@
 const {
   success,
   warning,
-  error: elog,
+   error: elog,
   formatResultMessage
 } = require("../lib/utils");
 

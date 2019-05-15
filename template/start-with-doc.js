@@ -37,7 +37,7 @@ module.exports = (app, baseconfig) => {
   const fallbackPort = new FallbackPort(port)
   const nowPort = fallbackPort.getPort()
   if (port !== nowPort) {
-    slog('[info]  ', `port ${port} is taken and fallback port ${nowPort}`)
+    slog(' info ', `port ${port} is taken and fallback port ${nowPort}`)
   }
   const docRelative = path.relative(appRoot, docFilename);
   const docPath = docRelative.replace(/\\/g, "/");
@@ -60,9 +60,9 @@ module.exports = (app, baseconfig) => {
   const removePlugin = preparePlugin()
 
   app.listen(nowPort, async err => {
-    if (err) elog("error: ", err);
+    if (err) elog(" error ", err);
 
-    slog("[info]  ", "register mockdate router, using " + docPath);
+    slog(" info ", "register mockdate router, using " + docPath);
     await mockRouter.init(app);
 
     installMiddleware(app, {
@@ -72,12 +72,12 @@ module.exports = (app, baseconfig) => {
     });
 
     slog(
-      "[info]  ",
+      " info ",
       "swagger ui doc url is: http://localhost:" + nowPort + docUIPath
     );
 
     slog(
-      "[success]  ",
+      " success ",
       `mock server is starting at ${nowPort}, you can get mock data on ${baseUrl}`
     );
   });

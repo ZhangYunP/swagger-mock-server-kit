@@ -3,10 +3,10 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 const error = (string, metadata) =>
-  void console.log(chalk.red(string), metadata);
+  void console.log(chalk.bgRed(string), metadata);
 
 const success = (string, metadata) =>
-  void console.log(chalk.green(string), metadata);
+  void console.log(chalk.bgGreen(string), metadata);
 
 const setupOwnMiddleware = (app, middlewareDir) => {
   let count = 0;
@@ -27,12 +27,12 @@ const setupOwnMiddleware = (app, middlewareDir) => {
             if (typeof middleware == "function") {
               app.use(middleware);
               count++;
-              success("[info]  ", "setup own middleware succeed!");
+              success(" info ", "setup own middleware succeed!");
             }
           }
           return;
         } catch (e) {
-          error("error: ", e);
+          error(" error ", e);
           throw e;
         }
       } else {
@@ -40,7 +40,7 @@ const setupOwnMiddleware = (app, middlewareDir) => {
       }
     });
   }
-  success("[info]  ", "own middleware number: " + count);
+  success(" info ", "own middleware number: " + count);
 };
 
 module.exports = setupOwnMiddleware;
