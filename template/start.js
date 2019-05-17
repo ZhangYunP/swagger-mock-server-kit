@@ -24,13 +24,13 @@ if (notFoundFile(docFilename)) {
 const release = start(app, baseconfig)
 
 process.on("unhandledRejection", err => {
-  elog("error: ", err);
+  elog(" error ", err);
   release()
   process.exit(1);
 });
 
 process.on("uncaughtException", err => {
-  elog("error: ", err);
+  elog(" error ", err);
   release()
   process.exit(1);
 });

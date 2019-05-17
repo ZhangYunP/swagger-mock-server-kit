@@ -1,7 +1,7 @@
 const {
   success,
   warning,
-  error: elog,
+   error: elog,
   formatResultMessage
 } = require("../lib/utils");
 
@@ -12,12 +12,12 @@ module.exports = (api, opts = {}) => {
       const operation = api.getOperation(req);
 
       const results = operation.validateRequest(req, opts);
-      success(
+      console.log(
         "-------------------------------------------------------------------------------------------------",
         ""
       );
       success(
-        "[request]  ",
+        " request ",
         `method: ${req.method}, path:  ${req.path}, body: ${JSON.stringify(
           req.body
         )}, query: ${JSON.stringify(req.query)}, files: ${
@@ -30,7 +30,7 @@ module.exports = (api, opts = {}) => {
         warning,
         elog
       });
-      success(
+      console.log(
         "-------------------------------------------------------------------------------------------------",
         ""
       );

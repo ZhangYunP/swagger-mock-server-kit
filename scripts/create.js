@@ -14,40 +14,43 @@ let spawnCmd;
 
 function create(projectName = "swagger-mock-server", options) {
   (async () => {
-    log.success(
-      "[info]  ",
-      "execute create command, [projectName]: " +
-        projectName +
-        ", [--yarn]: " +
-        (options.yarn ? options.yarn : "false")
-    );
-
-    const distDir = path.join(process.cwd(), projectName);
-    if (fs.existsSync(distDir)) {
-      await clean(distDir);
-      log.success("[info]  ", "delete distDir succeed");
-    }
-    fs.mkdirSync(distDir);
-
-    const sourceDir = path.join(root, "template");
-
-    log.success(
-      "[info]  ",
-      "template path is: " + sourceDir + ", and will copy to " + distDir
-    );
-
-    if (!fs.existsSync(sourceDir)) {
-      throw new Error("source dir must be exists");
-    }
     try {
+      log.slog(
+        " info ",
+        "execute create command, [projectName]: " +
+          projectName +
+          ", [--yarn]: " +
+          (options.yarn ? options.yarn : "false")
+      );
+  
+      const distDir = path.join(process.cwd(), projectName);
+      if (fs.existsSync(distDir)) {
+        await clean(distDir);
+        log.slog(" info ", "delete distDir success");
+      }
+      fs.mkdirSync(distDir);
+  
+      const sourceDir = path.join(root, "template");
+  
+      log.slog(
+        " info ",
+        "template path is: " + sourceDir + ", and will copy to " + distDir
+      );
+  
+      if (!fs.existsSync(sourceDir)) {
+        throw new Error("source dir must be existed");
+      }
+  
       await fs.copy(sourceDir, distDir);
+  
+      log.slog(" info ", "copy template to distDir success!");
+      await installDeps(options, distDir);
+      log.slog(" info ", "create project success!");
+      process.exit(0);
     } catch (e) {
-      log.error(e);
-      throw e;
+      log.elog(' error ', e.message)
+      process.exit(1)
     }
-
-    log.success("[info]  ", "copy template to distDir succeed!");
-    await installDeps(options, distDir);
   })();
 }
 
@@ -57,22 +60,23 @@ async function installDeps(options, cwd = process.cwd()) {
   } else {
     spawnCmd = "npm";
   }
-  try {
-    var spinner = ora("now install dependences , please wait...").start();
 
-    await asyncSpawn("installDeps", spawnCmd, ["install"], {
+  var spinner = ora("now install dependences , please wait...").start();
+
+  await asyncSpawn(
+    {
+      name: 'install-dependences'
+    },
+    spawnCmd,
+    ["install"],
+    {
       cwd
-    });
+    }
+  );
 
-    spinner.stop();
-  } catch (e) {
-    spinner.fail("project dependences install failed");
-    log.error("error: ", e);
-    throw e;
-  }
+  spinner.stop();
   spinner.succeed("project dependences install succeed!");
-  log.success("[info]  ", "create project sucess!");
-  process.exit(0);
+
 }
 
 module.exports = create;

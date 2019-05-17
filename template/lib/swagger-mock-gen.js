@@ -7,7 +7,7 @@ const bus = require("./event-bus");
 
 const {
   success,
-  error: elog,
+   error: elog,
   warning,
   formatResultMessage
 } = require("./utils");
@@ -74,7 +74,7 @@ class MockRouter {
       this.api = api;
       return true;
     } catch (e) {
-      elog("error: ", e);
+      elog(" error ", e);
       return false;
     }
   }
@@ -106,11 +106,11 @@ class MockRouter {
         if (err) throw err;
         this.setup(app, validateResponse, notValidate, err => {
           if (err) throw err;
-          success("[info]  ", "register mockdata router success");
+          success(" info ", "register mockdata router success");
         });
       });
     } catch (e) {
-      elog("error: ", e);
+      elog(" error ", e);
       throw e;
     }
   }
@@ -144,7 +144,7 @@ class MockRouter {
                 res.status(400).json({
                   code: 40002,
                   message: "invalidate response",
-                  error: results.errors
+                   error: results.errors
                 })
               }
             } else {
