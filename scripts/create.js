@@ -19,7 +19,7 @@ function create(projectName = "swagger-mock-server", options) {
       log.slog(
         " info ",
         "will create project '" +
-          project + "'"
+        projectName + "'"
       );
   
       const distDir = path.join(process.cwd(), projectName);
@@ -46,10 +46,10 @@ function create(projectName = "swagger-mock-server", options) {
       const shouldInstall = options.install !== 'false'
       shouldInstall && await installDeps(options, distDir);
 
-      log.slog(" Done ", "create project '" + project + "' succeed!");
+      log.slog(" Done ", "create project '" + projectName + "' succeed!");
 
       console.log('\ntips:')
-      console.log('          cd ' + project)
+      console.log('          cd ' + projectName)
       console.log('          npm start')
 
       process.exit(0);
