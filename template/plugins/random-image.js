@@ -16,5 +16,12 @@ module.exports = body => {
         hello: 'world'
       }
     })
+    .mock({
+      path: '/logout',
+      method: 'get',
+      data: {
+        result: '@boolean'
+      }
+    })
     .done()
 };

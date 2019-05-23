@@ -14,7 +14,9 @@ program.version(version);
 program
   .command("create [projectName]")
   .description("create a mock server project")
-  .option("-y, --yarn", "use yarn")
+  .option('-i, --install [install]', 'auto install dependences')
+  .option('-y, --yarn', 'use yarn')
+  .option('-r, --registry [registry]', 'set npm registry')
   .action(create);
 
 program

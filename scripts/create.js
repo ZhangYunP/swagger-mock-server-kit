@@ -6,21 +6,20 @@ const util = require("util");
 const asyncSpawn = require("../lib/async-spawn");
 const log = require("../lib/log");
 
-const { root } = require("../config");
+const { root, npmRegistry } = require("../config");
 
 const clean = util.promisify(rimraf);
 
 let spawnCmd;
+const cmdArg = ['install'];
 
 function create(projectName = "swagger-mock-server", options) {
   (async () => {
     try {
       log.slog(
         " info ",
-        "execute create command, [projectName]: " +
-          projectName +
-          ", [--yarn]: " +
-          (options.yarn ? options.yarn : "false")
+        "will create project '" +
+          project + "'"
       );
   
       const distDir = path.join(process.cwd(), projectName);
@@ -32,10 +31,10 @@ function create(projectName = "swagger-mock-server", options) {
   
       const sourceDir = path.join(root, "template");
   
-      log.slog(
-        " info ",
-        "template path is: " + sourceDir + ", and will copy to " + distDir
-      );
+      // log.slog(
+      //   " info ",
+      //   "template path is: " + sourceDir + ", and will copy to " + distDir
+      // );
   
       if (!fs.existsSync(sourceDir)) {
         throw new Error("source dir must be existed");
@@ -43,9 +42,16 @@ function create(projectName = "swagger-mock-server", options) {
   
       await fs.copy(sourceDir, distDir);
   
-      log.slog(" info ", "copy template to distDir success!");
-      await installDeps(options, distDir);
-      log.slog(" info ", "create project success!");
+      // log.slog(" info ", "copy template to distDir success!");
+      const shouldInstall = options.install !== 'false'
+      shouldInstall && await installDeps(options, distDir);
+
+      log.slog(" Done ", "create project '" + project + "' succeed!");
+
+      console.log('\ntips:')
+      console.log('          cd ' + project)
+      console.log('          npm start')
+
       process.exit(0);
     } catch (e) {
       log.elog(' error ', e.message)
@@ -55,27 +61,55 @@ function create(projectName = "swagger-mock-server", options) {
 }
 
 async function installDeps(options, cwd = process.cwd()) {
+  if (!fs.existsSync(path.join(cwd, 'package.json'))) {
+    throw new Error('template occured, do not exist package.json, seem like a bug')
+  }
+
+  if (fs.existsSync(path.join(cwd, 'node_modules'))) {
+   log.wlog(' wraning ', 'node_modules has existed, delete it can avoid some conflict') 
+   await clean(path.join(cwd, 'node_modules'))
+  }
+
   if (options.yarn) {
     spawnCmd = "yarn";
   } else {
     spawnCmd = "npm";
   }
 
-  var spinner = ora("now install dependences , please wait...").start();
+  if (options.registry) {
+      cmdArg.push('--registry ' + options.registry)
+  } else {
+    cmdArg.push('--registry ' + npmRegistry)
+  }
 
+  log.slog(' download ', 'now install dependences , please wait...');
+
+  const spinner = ora("").start();
+  spinner.spinner = {
+		"interval": 50,
+		"frames": [
+			"◐",
+			"◓",
+			"◑",
+			"◒"
+		]
+  }
+  
   await asyncSpawn(
     {
-      name: 'install-dependences'
+      name: 'install-dependences',
+      ignoreErrorMessage: true,
+      spinner
     },
     spawnCmd,
-    ["install"],
+    cmdArg,
     {
-      cwd
+      cwd,
     }
   );
 
   spinner.stop();
-  spinner.succeed("project dependences install succeed!");
+  log.slog(" success ", "dependences install succeed!")
 
 }
 
