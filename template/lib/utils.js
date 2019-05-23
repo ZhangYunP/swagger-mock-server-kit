@@ -64,12 +64,12 @@ const formatResultMessage = ({
   warnings
 }, log) => {
   if (errors.length) {
-    errors.forEach(error => {
+    errors.forEach(err => {
       let {
         code,
         path,
         message
-      } = error;
+      } = err;
       path = "#/" + tojsonPointer(path);
       error(
         " error ",
