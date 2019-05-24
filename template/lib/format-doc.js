@@ -50,7 +50,6 @@ module.exports = (doc, docPath, mockhost, log) => {
   doc.produces = [...produces];
 
   if (docPath) {
-    console.log('docpath', docPath)
     const ext = extname(docPath);
     try {
       if (ext === ".yaml") {

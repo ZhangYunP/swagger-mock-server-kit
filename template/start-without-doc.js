@@ -4,7 +4,7 @@ const preparePlugin = require('./lib/setup-plugins')
 const {
   setupNeededMiddleware,
   success: slog,
-   error: elog,
+  error: elog,
   installMiddleware
 } = require("./lib/utils");
 
@@ -30,8 +30,7 @@ module.exports = async (app, baseconfig) => {
   const mockRouter = new MockRouter({
     baseUrl,
     appRoot,
-    plugins,
-    hasSwaggerDoc: false
+    plugins
   });
 
   const removePlugin = preparePlugin()

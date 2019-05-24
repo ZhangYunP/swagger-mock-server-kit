@@ -7,10 +7,11 @@ const {
 // base on JSON Schema Draft 4
 class Body {
   constructor(opts = {}) {
-    this.opts = opts;
+    this.swaggerDocument = opts.swaggerDocument;
+    this.baseUrl = opts.baseUrl
     this.pathInfo = [];
     this.notValidate = [];
-    this.init(this.opts.swaggerDocument);
+    this.init(this.swaggerDocument);
   }
 
   init(swaggerDocument) {
@@ -132,7 +133,7 @@ class Body {
   }
 
   resolveRef(ref) {
-    let root = _.cloneDeep(this.opts.swaggerDocument);
+    let root = _.cloneDeep(this.swaggerDocument);
     const parts = ref.split("#");
     if (!parts[0]) {
       const paths = parts[1].split("/").slice(1);
@@ -159,8 +160,9 @@ class Body {
         this.mock(path, method, data)
       }
     } else {
+      const basePath = path.substring(this.baseUrl.length)
       notfound = _.some(this.pathInfo, val => {
-        if (val.path === path && val.method === method) {
+        if (val.path === basePath && val.method === method) {
           if (_.isArray(val.example)) {
             data = _.isArray(data) ? data : [data];
             val.example.forEach(item => {
@@ -174,7 +176,7 @@ class Body {
         }
       });
       if (!notfound) {
-        this.register(path, method, data);
+        this.register(basePath, method, data);
       }
     }
 

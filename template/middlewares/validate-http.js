@@ -13,12 +13,11 @@ module.exports = (api, opts = {}) => {
 
       const results = operation.validateRequest(req, opts);
       console.log(
-        "-------------------------------------------------------------------------------------------------",
-        ""
+        "-------------------------------------------------------------------------------------------------"
       );
       success(
         " request ",
-        `method: ${req.method}, path:  ${req.path}, body: ${JSON.stringify(
+        `method: ${req.method}, path:  ${opts.baseUrl}${req.path}, body: ${JSON.stringify(
           req.body
         )}, query: ${JSON.stringify(req.query)}, files: ${
           req.files
@@ -31,8 +30,7 @@ module.exports = (api, opts = {}) => {
         elog
       });
       console.log(
-        "-------------------------------------------------------------------------------------------------",
-        ""
+        "-------------------------------------------------------------------------------------------------"
       );
       if (results.errors.length === 0) return next();
       res.status(400).json({
@@ -40,6 +38,23 @@ module.exports = (api, opts = {}) => {
         message: "invalidate request"
       });
     } else {
+      console.log(
+        "-------------------------------------------------------------------------------------------------",
+        ""
+      );
+      success(
+        " request ",
+        `method: ${req.method}, path:  ${opts.baseUrl}${req.path}, body: ${JSON.stringify(
+          req.body
+        )}, query: ${JSON.stringify(req.query)}, files: ${
+          req.files
+        }, content type: ${req.headers["content-type"] ||
+          "application/octet-stream"}`
+      ); 
+      console.log(
+        "-------------------------------------------------------------------------------------------------",
+        ""
+      );
       next();
     }
   };

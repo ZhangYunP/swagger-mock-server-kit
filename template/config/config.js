@@ -9,7 +9,7 @@ const plugin = resolve(pluginPath, "plugin-example.js");
 module.exports = {
   plugins: [plugin],
   // baseUrl: '/api/v1',
-  // docFilename: resolve(appRoot, "specs/demo/swagger.yaml")
+  // docFilename: resolve(appRoot, "specs/demo/swagger.yaml"),
   // validateRequest: false,
   // validateResponse: false,
   // proxy: {

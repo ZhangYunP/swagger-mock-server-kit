@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const sway = require("sway");
-const validateRquestMiddleware = require("../middlewares/validate-http");
+const validateHttp = require("../middlewares/validate-http");
 const Body = require("./body");
 const bus = require("./event-bus");
 
@@ -21,9 +21,10 @@ const {
 const registerValidateMiddleWare = (app, api, baseUrl, notValidate) => {
   app.use(
     baseUrl,
-    validateRquestMiddleware(api, {
+    validateHttp(api, {
       strictMode: false,
-      notValidate
+      notValidate,
+      baseUrl
     })
   );
 };
@@ -47,6 +48,7 @@ class MockRouter {
     this.dist = path.join(this.output, this.filename);
     this.api = null;
     this.body = new Body({
+      baseUrl: this.baseUrl,
       swaggerDocument: this.swaggerDocument
     });
   }
@@ -80,7 +82,7 @@ class MockRouter {
 
   async init(app) {
     try {
-      if (this.hasSwaggerDoc) {
+      if (this.url) {
         const isValidateDoc = await this.validateDoc({
           definition: this.url
         });

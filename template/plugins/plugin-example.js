@@ -1,26 +1,19 @@
 module.exports = body => {
   return body
-    .mock("/users", "get", [{
+    .mock("/api/v1/users", "get", [{
       avatar: "@image"
     }])
-    .mock("/users/{userId}", "get", {
+    .mock("/api/v1/users/{userId}", "get", {
       userImg: "@ximage"
     })
-    .mock("/foo/bar", "get", {
+    .mock("/api/v1/foo/bar", "get", {
       hello: "world"
     })
     .mock({
-      path: '/foo/baz',
+      path: '/api/v1/foo/baz',
       method: 'get',
       data: {
         hello: 'world'
-      }
-    })
-    .mock({
-      path: '/logout',
-      method: 'get',
-      data: {
-        result: '@boolean'
       }
     })
     .done()
