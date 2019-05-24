@@ -10,11 +10,11 @@ module.exports = {
   plugins: [plugin],
   // baseUrl: '/api/v1',
   // docFilename: resolve(appRoot, "specs/demo/swagger.yaml")
-  validateRequest: false,
-  validateResponse: false,
+  // validateRequest: false,
+  // validateResponse: false,
   // proxy: {
   //   target: 'http://localhost:1234/',
   //   changeOrigin: true
   // },
-  online: 'http://192.168.10.99:8083/manage/v2/api-docs'
+  // online: 'http://192.168.10.99:8083/manage/v2/api-docs'
 };
