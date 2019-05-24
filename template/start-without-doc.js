@@ -11,7 +11,7 @@ const {
 module.exports = async (app, baseconfig) => {
   const {
     appRoot,
-    baseUrl,
+    baseUrl = '/api/v1',
     plugins,
     defaultPort
   } = baseconfig;

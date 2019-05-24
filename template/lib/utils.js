@@ -189,27 +189,41 @@ const installMiddleware = (app, config) => {
   );
 };
 
-const getSwaggerDocument = docFilename => {
-  const ext = path.extname(docFilename);
+const getSwaggerDocument = async (docFilename, isOnline) => {
   let swaggerDocument;
-
-  try {
-    if (ext === ".yaml") {
-      swaggerDocument = yaml.safeLoad(fs.readFileSync(docFilename));
+  if (!isOnline) {
+    const ext = path.extname(docFilename);
+    try {
+      if (ext === ".yaml") {
+        swaggerDocument = yaml.safeLoad(fs.readFileSync(docFilename));
+      } else {
+        swaggerDocument = require(docFilename);
+      }
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        error(' error ', 'not doc file')
+      }
+      throw e
+    }
+  } else {
+    const result = await axios.get(docFilename)
+    if (result.status === 200) {
+      swaggerDocument = result.data
     } else {
-      swaggerDocument = require(docFilename);
+      elog(' error ', 'online swaggerDocUrl is not validate')
     }
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      error(' error ', 'not doc file')
-    }
-    throw e
   }
+  
   return swaggerDocument;
 };
 
-const getBasePath = docFilename => {
-  const doc = getSwaggerDocument(docFilename);
+const getBasePath = async (docFilename, isOnline) => {
+  let doc
+  if (typeof docFilename === 'string') {
+    doc = await getSwaggerDocument(docFilename, isOnline);
+  } else if (typeof docFilename === 'object') {
+    doc = docFilename
+  }
   return doc.basePath;
 };
 

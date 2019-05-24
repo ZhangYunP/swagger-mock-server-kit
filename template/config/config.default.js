@@ -6,8 +6,6 @@ const mockhost = "localhost";
 
 const docUIPath = "/api-docs";
 
-const baseUrl = '/api/v1'
-
 const defaultPort = 10101
 
 const mockExtPath = path.join(appRoot, "lib/random-extend.js");
@@ -23,7 +21,6 @@ const validateResponse = true;
 
 module.exports = {
   appRoot,
-  baseUrl,
   defaultPort,
   mockhost,
   docUIPath,

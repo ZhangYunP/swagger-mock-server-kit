@@ -21,7 +21,6 @@ if (notFoundFile(docFilename) && !online) {
 } else {
   start = require('./start-with-doc')
 }
-let release
 
 (async () => {
   await start(app, baseconfig)

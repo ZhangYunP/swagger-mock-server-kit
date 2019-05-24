@@ -35,7 +35,7 @@ module.exports = async (app, baseconfig) => {
       elog(' error ', 'online swaggerDocUrl is not validate')
     }
   } else if (docFilename) {
-    swaggerDocument = getSwaggerDocument(docFilename);
+    swaggerDocument = await getSwaggerDocument(docFilename);
   }
 
   const formatDocument = formatDoc(swaggerDocument, docFilename, mockhost, {
