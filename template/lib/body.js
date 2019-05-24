@@ -1,15 +1,8 @@
 const _ = require("lodash");
-const fs = require("fs");
 const path = require("path");
-const {
-  safeLoad
-} = require("js-yaml");
 const {
   choice
 } = require("./utils");
-const {
-  docFilename = 'swagger.yaml'
-} = require("../config");
 
 // base on JSON Schema Draft 4
 class Body {
@@ -17,26 +10,15 @@ class Body {
     this.opts = opts;
     this.pathInfo = [];
     this.notValidate = [];
-    this.init(this.opts.hasSwaggerDoc);
+    this.init(this.opts.swaggerDocument);
   }
 
-  init(shouleParseSwaggerDoc) {
-    if (!shouleParseSwaggerDoc) {
+  init(swaggerDocument) {
+    if (!Object.keys(swaggerDocument).length) {
       return;
     }
-    if (!fs.existsSync(docFilename))
-      throw new Error("not exists file: " + docFilename);
-    const ext = path.extname(docFilename);
-    try {
-      if (ext === ".yaml") {
-        this.doc = safeLoad(fs.readFileSync(docFilename));
-      } else {
-        this.doc = require(docFilename);
-      }
-    } catch (e) {
-      throw e;
-    }
-    this.parseDoc(this.doc);
+
+    this.parseDoc(swaggerDocument);
   }
 
   parseDoc(doc) {
@@ -150,7 +132,7 @@ class Body {
   }
 
   resolveRef(ref) {
-    let root = _.cloneDeep(this.doc);
+    let root = _.cloneDeep(this.opts.swaggerDocument);
     const parts = ref.split("#");
     if (!parts[0]) {
       const paths = parts[1].split("/").slice(1);

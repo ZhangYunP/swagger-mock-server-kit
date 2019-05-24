@@ -24,17 +24,15 @@ if (notFoundFile(docFilename) && !online) {
 let release
 
 (async () => {
-  release = await start(app, baseconfig)
+  await start(app, baseconfig)
 })()
 
 process.on("unhandledRejection", err => {
   elog(" error ", err);
-  release()
   process.exit(1);
 });
 
 process.on("uncaughtException", err => {
   elog(" error ", err);
-  release()
   process.exit(1);
 });

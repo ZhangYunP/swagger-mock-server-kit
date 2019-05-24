@@ -37,8 +37,7 @@ const formatConfig = (config = {}) => {
   if (!config.appRoot) {
     throw new Error("appRoot is required");
   }
-  config.docFilename = config.docFilename || 'swagger.yaml';
-  if (!path.isAbsolute(config.docFilename)) {
+  if (config.docFilename && !path.isAbsolute(config.docFilename)) {
     config.docFilename = path.resolve(config.appRoot, config.docFilename);
   }
   config.plugins = config.plugins || [];
@@ -129,6 +128,7 @@ const findServerConfig = ({
 };
 
 const notFoundFile = (path) => {
+  if (!path) return true
   return !fs.existsSync(path)
 }
 
@@ -171,13 +171,11 @@ const genRegexString = regExp => {
 const installMiddleware = (app, config) => {
   app.use(cors());
 
-  if (config.swaggerDocUrl) {
+  if (config.swaggerDocument) {
     app.use(
       config.docUIPath,
       swaggerUi.serve,
-      swaggerUi.setup(null, {
-        swaggerUrl: config.swaggerDocUrl
-      })
+      swaggerUi.setup(config.swaggerDocument)
     );
   }
   

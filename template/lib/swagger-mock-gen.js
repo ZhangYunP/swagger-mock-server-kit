@@ -47,7 +47,7 @@ class MockRouter {
     this.dist = path.join(this.output, this.filename);
     this.api = null;
     this.body = new Body({
-      hasSwaggerDoc: this.hasSwaggerDoc
+      swaggerDocument: this.swaggerDocument
     });
   }
 
@@ -57,7 +57,6 @@ class MockRouter {
     opts.filename = opts.filename || "mockRoutes.js";
     opts.blackList = opts.blackList || [];
     opts.baseUrl = opts.baseUrl || "/api/v1";
-    opts.hasSwaggerDoc = opts.hasSwaggerDoc === false ? false : true
     return opts;
   }
 

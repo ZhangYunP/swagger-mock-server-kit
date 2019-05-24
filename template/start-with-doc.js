@@ -14,7 +14,7 @@ const {
 } = require("./lib/utils");
 
 module.exports = async (app, baseconfig) => {
-  const {
+  let {
     appRoot,
     docFilename,
     docUIPath,
@@ -23,17 +23,18 @@ module.exports = async (app, baseconfig) => {
     online 
   } = baseconfig;
   let swaggerDocUrl = ''
-  let swaggerDocument = ''
+  let swaggerDocument = {}
 
   if (online) {
     const result = await axios.get(online)
     if (result.status === 200) {
       swaggerDocument = result.data
       slog(' info ', 'get online swagger doc at ' + online)
+
     } else {
       elog(' error ', 'online swaggerDocUrl is not validate')
     }
-  } else {
+  } else if (docFilename) {
     swaggerDocument = getSwaggerDocument(docFilename);
   }
 
@@ -72,6 +73,7 @@ module.exports = async (app, baseconfig) => {
 
   const mockRouter = new MockRouter({
     url: swaggerDocUrl,
+    swaggerDocument: formatDocument, 
     baseUrl,
     appRoot,
     plugins
@@ -87,7 +89,7 @@ module.exports = async (app, baseconfig) => {
 
     installMiddleware(app, {
       ...baseconfig,
-      swaggerDocUrl,
+      swaggerDocument: formatDocument,
       baseUrl
     });
 
