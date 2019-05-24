@@ -50,6 +50,7 @@ function create(projectName = "swagger-mock-server", options) {
 
       console.log('\ntips:')
       console.log('          cd ' + projectName)
+      !shouldInstall && console.log('          npm install')
       console.log('          npm start')
 
       process.exit(0);
