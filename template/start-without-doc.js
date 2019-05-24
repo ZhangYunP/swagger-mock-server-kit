@@ -8,7 +8,7 @@ const {
   installMiddleware
 } = require("./lib/utils");
 
-module.exports = (app, baseconfig) => {
+module.exports = async (app, baseconfig) => {
   const {
     appRoot,
     baseUrl,
@@ -49,7 +49,7 @@ module.exports = (app, baseconfig) => {
 
     slog(
       " success ",
-      `mock server is starting at ${nowPort}, you can get mock data on ${baseUrl}`
+      `mock server is starting at ${nowPort}, you can get mock data on http://localhost:${nowPort}${baseUrl}`
     );
   });
 

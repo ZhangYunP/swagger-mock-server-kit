@@ -27,7 +27,7 @@ const setupOwnMiddleware = (app, middlewareDir) => {
             if (typeof middleware == "function") {
               app.use(middleware);
               count++;
-              success(" info ", "setup own middleware succeed!");
+              success(" info ", "setup middleware success!");
             }
           }
           return;

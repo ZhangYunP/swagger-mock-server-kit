@@ -1,4 +1,5 @@
 const path = require("path");
+const axios = require('axios');
 const FallbackPort = require('fallback-port')
 const MockRouter = require("./lib/swagger-mock-gen");
 const formatDoc = require('./lib/format-doc')
@@ -12,16 +13,29 @@ const {
   installMiddleware
 } = require("./lib/utils");
 
-module.exports = (app, baseconfig) => {
+module.exports = async (app, baseconfig) => {
   const {
     appRoot,
     docFilename,
     docUIPath,
     mockhost,
-    plugins
+    plugins,
+    online 
   } = baseconfig;
+  let swaggerDocUrl = ''
+  let swaggerDocument = ''
 
-  const swaggerDocument = getSwaggerDocument(docFilename);
+  if (online) {
+    const result = await axios.get(online)
+    if (result.status === 200) {
+      swaggerDocument = result.data
+      slog(' info ', 'get online swagger doc at ' + online)
+    } else {
+      elog(' error ', 'online swaggerDocUrl is not validate')
+    }
+  } else {
+    swaggerDocument = getSwaggerDocument(docFilename);
+  }
 
   const formatDocument = formatDoc(swaggerDocument, docFilename, mockhost, {
     slog,
@@ -39,9 +53,16 @@ module.exports = (app, baseconfig) => {
   if (port !== nowPort) {
     slog(' info ', `port ${port} is taken and fallback port ${nowPort}`)
   }
-  const docRelative = path.relative(appRoot, docFilename);
-  const docPath = docRelative.replace(/\\/g, "/");
-  const swaggerDocUlr = `http://localhost:${nowPort}/${docPath}`;
+
+  if (online) {
+    swaggerDocUrl = online
+  } else {
+    const docRelative = path.relative(appRoot, docFilename);
+    const docPath = docRelative.replace(/\\/g, "/");
+    swaggerDocUrl = `http://localhost:${nowPort}/${docPath}`;
+  }
+
+  slog(' info ', `swaggerDocUrl ${swaggerDocUrl}`)
 
   setupNeededMiddleware(app, {
     path: appRoot,
@@ -50,24 +71,23 @@ module.exports = (app, baseconfig) => {
   });
 
   const mockRouter = new MockRouter({
-    url: swaggerDocUlr,
+    url: swaggerDocUrl,
     baseUrl,
     appRoot,
     plugins
   });
-
 
   const removePlugin = preparePlugin()
 
   app.listen(nowPort, async err => {
     if (err) elog(" error ", err);
 
-    slog(" info ", "register mockdate router, using " + docPath);
+    slog(" info ", "register mockdate router");
     await mockRouter.init(app);
 
     installMiddleware(app, {
       ...baseconfig,
-      swaggerDocUlr,
+      swaggerDocUrl,
       baseUrl
     });
 

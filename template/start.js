@@ -10,18 +10,22 @@ const app = express()
 
 const baseconfig = formatConfig(config);
 const {
-  docFilename
+  docFilename,
+  online
 } = baseconfig;
 
 let start
 
-if (notFoundFile(docFilename)) {
+if (notFoundFile(docFilename) && !online) {
   start = require('./start-without-doc')
 } else {
   start = require('./start-with-doc')
 }
+let release
 
-const release = start(app, baseconfig)
+(async () => {
+  release = await start(app, baseconfig)
+})()
 
 process.on("unhandledRejection", err => {
   elog(" error ", err);

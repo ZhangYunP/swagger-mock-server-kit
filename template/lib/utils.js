@@ -170,16 +170,21 @@ const genRegexString = regExp => {
 
 const installMiddleware = (app, config) => {
   app.use(cors());
-  app.use(
-    config.docUIPath,
-    swaggerUi.serve,
-    swaggerUi.setup(null, {
-      swaggerUrl: config.swaggerDocUlr
-    })
-  );
-  if (config.proxyConfig) {
-    app.use(config.baseUrl, proxy(config.proxyConfig));
+
+  if (config.swaggerDocUrl) {
+    app.use(
+      config.docUIPath,
+      swaggerUi.serve,
+      swaggerUi.setup(null, {
+        swaggerUrl: config.swaggerDocUrl
+      })
+    );
   }
+  
+  if (config.proxy) {
+    app.use(config.baseUrl, proxy(config.proxy));
+  }
+  
   setupMiddleware(
     app,
     config.middlewareDir || path.join(config.appRoot, "middlewares")

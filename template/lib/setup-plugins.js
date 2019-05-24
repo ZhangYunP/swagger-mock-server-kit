@@ -1,3 +1,4 @@
+const path = require('path')
 const {
   plugins
 } = require("../config");
@@ -8,7 +9,7 @@ const {
 
 const perparePlugin = () => {
   const remove = bus.on(body => {
-    success(" info ", `start execute plugin`);
+    success(" info ", `start install plugin`);
     const next = () => {
       if (!plugins.length) {
         success(" info ", `all plugins install success`)
@@ -19,7 +20,8 @@ const perparePlugin = () => {
         pluginModule = require(plugin);
         const done = pluginModule(body);
         if (done === true) {
-          success(" info ", `plugin ${pluginModule.name} install success`)
+          const name = path.basename(plugin, '.js')
+          success(" info ", `plugin '${name}' install success`)
           next()
         }
       } catch (e) {

@@ -10,18 +10,19 @@
   "license": "MIT",
   "main": "start.js",
   "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.19.0",
     "chalk": "^2.4.2",
     "cors": "^2.8.5",
     "express": "^4.12.3",
+    "fallback-port": "^0.1.7",
     "http-proxy-middleware": "^0.19.1",
-    "mockjs": "^1.0.1-beta3",
-    "swagger-ui-express": "^4.0.2",
-    "sway": "^2.0.6",
     "js-yaml": "^3.13.1",
-    "body-parser": "^1.19.0",
     "lodash": "^4.17.11",
+    "mockjs": "^1.0.1-beta3",
     "multer": "^1.4.1",
-    "fallback-port": "^0.1.7"
+    "swagger-ui-express": "^4.0.2",
+    "sway": "^2.0.6"
   },
   "scripts": {
     "start": "nodemon --config nodemon.config.json start.js"

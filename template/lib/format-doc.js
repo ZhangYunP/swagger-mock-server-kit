@@ -49,17 +49,19 @@ module.exports = (doc, docPath, mockhost, log) => {
   doc.consumes = [...consumes];
   doc.produces = [...produces];
 
-  const ext = extname(docPath);
-  try {
-    if (ext === ".yaml") {
-      yamldoc = safeDump(doc);
-
-      fs.writeFileSync(docPath, yamldoc);
-    } else {
-      fs.writeFileSync(docPath, JSON.stringify(doc, null, 4));
+  if (docPath) {
+    const ext = extname(docPath);
+    try {
+      if (ext === ".yaml") {
+        yamldoc = safeDump(doc);
+  
+        fs.writeFileSync(docPath, yamldoc);
+      } else {
+        fs.writeFileSync(docPath, JSON.stringify(doc, null, 4));
+      }
+    } catch (e) {
+      throw e
     }
-  } catch (e) {
-    throw e
   }
 
   return doc;
