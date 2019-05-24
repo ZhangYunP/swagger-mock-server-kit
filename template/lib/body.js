@@ -14,7 +14,7 @@ class Body {
   }
 
   init(swaggerDocument) {
-    if (!Object.keys(swaggerDocument).length) {
+    if (!swaggerDocument || !Object.keys(swaggerDocument).length) {
       return;
     }
 
