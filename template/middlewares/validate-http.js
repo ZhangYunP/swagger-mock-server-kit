@@ -8,7 +8,7 @@ const {
 module.exports = (api, opts = {}) => {
   return (req, res, next) => {
     // path-to-repexp
-    if (!opts.notValidate.includes(req.url)) {
+    if (!opts.notValidate.includes(req.path)) {
       const operation = api.getOperation(req);
 
       const results = operation.validateRequest(req, opts);

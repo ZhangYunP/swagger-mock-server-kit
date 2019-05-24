@@ -3,13 +3,13 @@ const {
 } = require("path");
 
 const appRoot = resolve(__dirname, "..");
-
 const pluginPath = resolve(appRoot, "plugins");
-
-const demoplugin = resolve(pluginPath, "random-image.js");
+const plugin = resolve(pluginPath, "random-image.js");
 
 module.exports = {
-  plugins: [demoplugin],
-
-  docFilename: resolve(appRoot, "specs/demo/swagger.yaml")
+  plugins: [plugin],
+  // baseUrl: '/api/v1',
+  // docFilename: resolve(appRoot, "specs/demo/swagger.yaml")
+  // validateRequest: true,
+  // validateResponse: true
 };
