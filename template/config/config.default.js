@@ -15,9 +15,12 @@ const publicPath = path.join(appRoot, "public");
 const multerOptions = {
   dest: "upload/"
 };
-
+const validateDoc = true;
 const validateRequest = true;
 const validateResponse = true;
+
+const docPlaceWhere = path.resolve(appRoot, "specs/demo/swagger.json")
+const wirteDocToLocal = true
 
 module.exports = {
   appRoot,
@@ -28,5 +31,8 @@ module.exports = {
   validateRequest,
   validateResponse,
   mockExtPath,
-  publicPath
+  publicPath,
+  validateDoc,
+  docPlaceWhere,
+  wirteDocToLocal
 };

@@ -31,10 +31,10 @@ function create(projectName = "swagger-mock-server", options) {
   
       const sourceDir = path.join(root, "template");
   
-      // log.slog(
-      //   " info ",
-      //   "template path is: " + sourceDir + ", and will copy to " + distDir
-      // );
+      log.slog(
+        " info ",
+        "template path is: " + sourceDir + ", and will copy to " + distDir
+      );
   
       if (!fs.existsSync(sourceDir)) {
         throw new Error("source dir must be existed");

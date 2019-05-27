@@ -7,6 +7,7 @@ const proxy = require("http-proxy-middleware");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const fs = require("fs");
+const axios = require('axios')
 const yaml = require("js-yaml");
 const RandExp = require("randexp");
 const setupMiddleware = require("./setup-middleware");

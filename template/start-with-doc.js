@@ -1,5 +1,6 @@
 const path = require("path");
 const axios = require('axios');
+const fs = require('fs')
 const FallbackPort = require('fallback-port')
 const MockRouter = require("./lib/swagger-mock-gen");
 const formatDoc = require('./lib/format-doc')
@@ -20,7 +21,9 @@ module.exports = async (app, baseconfig) => {
     docUIPath,
     mockhost,
     plugins,
-    online 
+    online,
+    wirteDocToLocal,
+    docPlaceWhere
   } = baseconfig;
   let swaggerDocUrl = ''
   let swaggerDocument = {}
@@ -30,7 +33,7 @@ module.exports = async (app, baseconfig) => {
     if (result.status === 200) {
       swaggerDocument = result.data
       slog(' info ', 'get online swagger doc at ' + online)
-
+   
     } else {
       elog(' error ', 'online swaggerDocUrl is not validate')
     }
@@ -42,6 +45,11 @@ module.exports = async (app, baseconfig) => {
     slog,
     elog
   })
+
+  if (online && wirteDocToLocal) {
+    fs.writeFileSync(docPlaceWhere, JSON.stringify(formatDocument, null, 2)) 
+    slog(' info ', `write online doc to local`)
+  }
 
   const {
     port,
@@ -55,9 +63,13 @@ module.exports = async (app, baseconfig) => {
     slog(' info ', `port ${port} is taken and fallback port ${nowPort}`)
   }
 
-  if (online) {
+  if (online && wirteDocToLocal) {
+    const docRelative = path.relative(appRoot, docPlaceWhere);
+    const docPath = docRelative.replace(/\\/g, "/");
+    swaggerDocUrl = `http://localhost:${nowPort}/${docPath}`;
+  } else if (online) {
     swaggerDocUrl = online
-  } else {
+  } else { 
     const docRelative = path.relative(appRoot, docFilename);
     const docPath = docRelative.replace(/\\/g, "/");
     swaggerDocUrl = `http://localhost:${nowPort}/${docPath}`;

@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const sway = require("sway");
 const validateHttp = require("../middlewares/validate-http");
+const printfRequest = require('../middlewares/print-request')
 const Body = require("./body");
 const bus = require("./event-bus");
 
@@ -13,12 +14,13 @@ const {
 } = require("./utils");
 
 const {
+  validateDoc,
   validateRequest,
   validateResponse,
   mockExtPath
 } = require("../config");
 
-const registerValidateMiddleWare = (app, api, baseUrl, notValidate) => {
+const registerValidateMiddleWare = (app, api, baseUrl, notValidate, pathInfo) => {
   app.use(
     baseUrl,
     validateHttp(api, {
@@ -29,6 +31,13 @@ const registerValidateMiddleWare = (app, api, baseUrl, notValidate) => {
   );
 };
 
+const setupMiddleware = (app, baseUrl, pathInfo) => {
+  app.use(baseUrl,  printfRequest({
+    baseUrl,
+    pathInfo
+  }))
+}
+
 class MockRouter {
   constructor(opts = {}) {
     this.opts = this.formatopts(opts);
@@ -38,7 +47,7 @@ class MockRouter {
     this.modStart = `
       const mock = require('${mockPath}')
 
-      module.exports = (app, api, isvalidateRes, notValidate) => {
+      module.exports = (app, api, validateDoc, validateRes, notValidate) => {
         
     `;
     this.modEnd = `
@@ -71,6 +80,7 @@ class MockRouter {
         elog,
         warning
       });
+
       if (results.errors.length > 0) return false;
       this.api = api;
       return true;
@@ -82,7 +92,7 @@ class MockRouter {
 
   async init(app) {
     try {
-      if (this.url) {
+      if (this.url && validateDoc) {
         const isValidateDoc = await this.validateDoc({
           definition: this.url
         });
@@ -98,14 +108,17 @@ class MockRouter {
         notValidate
       } = this.body;
 
-      if (validateRequest)
-        registerValidateMiddleWare(app, this.api, this.baseUrl, notValidate);
+      if (this.url && validateDoc && validateRequest) {
+        registerValidateMiddleWare(app, this.api, this.baseUrl, notValidate, validateRequest, pathInfo);
+      } else {
+        setupMiddleware(app, this.baseUrl)
+      }
 
       const template = this.generateTemplate(pathInfo);
 
       this.emitFile(template, err => {
         if (err) throw err;
-        this.setup(app, validateResponse, notValidate, err => {
+        this.setup(app, validateDoc, validateResponse, notValidate, err => {
           if (err) throw err;
           success(" info ", "register mockdata router success");
         });
@@ -131,7 +144,7 @@ class MockRouter {
         ":$1"
       )}', (req, res, next) => {
           if (!notValidate.includes("${path}")) {
-            if (isvalidateRes) {
+            if (validateDoc && validateRes) {
               const operation = api.getOperation(req);
               const responseData = {
                 body: mock(${JSON.stringify(example)}),
@@ -172,12 +185,12 @@ class MockRouter {
     cb(null);
   }
 
-  setup(app, validateResponse, notValidate, cb) {
+  setup(app, validateDoc, validateResponse, notValidate, cb) {
     if (!fs.existsSync(this.dist)) {
       cb(new Error("not found mockroute in dist"));
     }
     const registerRoute = require(this.dist);
-    registerRoute(app, this.api, validateResponse, notValidate);
+    registerRoute(app, this.api, validateDoc, validateResponse, notValidate);
     cb(null);
   }
 }
