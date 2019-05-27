@@ -23,7 +23,7 @@ module.exports = async (app, baseconfig) => {
     plugins,
     online,
     wirteDocToLocal,
-    docPlaceWhere
+    docPlaceWhere,
   } = baseconfig;
   let swaggerDocUrl = ''
   let swaggerDocument = {}

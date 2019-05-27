@@ -3,11 +3,8 @@ const {
 } = require("path");
 
 const appRoot = resolve(__dirname, "..");
-const pluginPath = resolve(appRoot, "plugins");
-const plugin = resolve(pluginPath, "plugin-example.js");
 
 module.exports = {
-  plugins: [plugin],
   // baseUrl: '/api/v1',
   docFilename: resolve(appRoot, "specs/demo/swagger.json"),
   validateDoc: false,

@@ -12,12 +12,27 @@ const yaml = require("js-yaml");
 const RandExp = require("randexp");
 const setupMiddleware = require("./setup-middleware");
 const {
-  multerOptions
+  multerOptions,
+  baseUrl = '/api/v1'
 } = require("../config");
 
 const log = console.log;
 const upload = multer(multerOptions);
 let count = 0;
+
+const autoLoadPlugin = (dir) => {
+  const plugins = []
+  const appRoot = path.resolve(__dirname, "..");
+  const pluginPath = path.resolve(appRoot, dir);
+  if (fs.existsSync(pluginPath)) {
+    const files = fs.readdirSync(pluginPath)
+    files.forEach(file => {
+      const current = path.join(pluginPath, file)
+      plugins.push(current)
+    })
+  }
+  return plugins
+}
 
 const isvalidatePort = port => {
   port = parseInt(port, 10);
@@ -113,7 +128,7 @@ const formatResultMessage = ({
 
 const findServerConfig = ({
   host = "",
-  basePath = "/api/v1"
+  basePath = baseUrl
 }) => {
   let port;
   const parts = host.split(":");
@@ -268,6 +283,7 @@ const findAssets = assetPath => {
 };
 
 module.exports = {
+  autoLoadPlugin,
   formatConfig,
   notFoundFile,
   getSwaggerDocument,

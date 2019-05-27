@@ -1,4 +1,5 @@
 const path = require("path");
+const { autoLoadPlugin } = require('../lib/utils')
 
 const appRoot = path.resolve(__dirname, "..");
 
@@ -22,6 +23,9 @@ const validateResponse = true;
 const docPlaceWhere = path.resolve(appRoot, "specs/demo/swagger.json")
 const wirteDocToLocal = true
 
+
+const plugins = autoLoadPlugin("plugins")
+
 module.exports = {
   appRoot,
   defaultPort,
@@ -34,5 +38,6 @@ module.exports = {
   publicPath,
   validateDoc,
   docPlaceWhere,
-  wirteDocToLocal
+  wirteDocToLocal,
+  plugins
 };
