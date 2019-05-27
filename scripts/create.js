@@ -13,52 +13,60 @@ const clean = util.promisify(rimraf);
 let spawnCmd;
 const cmdArg = ['install'];
 
-function create(projectName = "swagger-mock-server", options) {
-  (async () => {
-    try {
-      log.slog(
-        " info ",
-        "will create project '" +
-        projectName + "'"
-      );
-  
-      const distDir = path.join(process.cwd(), projectName);
-      if (fs.existsSync(distDir)) {
-        await clean(distDir);
-        log.slog(" info ", "delete distDir success");
-      }
-      fs.mkdirSync(distDir);
-  
-      const sourceDir = path.join(root, "template");
-  
-      // log.slog(
-      //   " info ",
-      //   "template path is: " + sourceDir + ", and will copy to " + distDir
-      // );
-  
-      if (!fs.existsSync(sourceDir)) {
-        throw new Error("source dir must be existed");
-      }
-  
-      await fs.copy(sourceDir, distDir);
-  
-      // log.slog(" info ", "copy template to distDir success!");
-      const shouldInstall = options.install !== 'false'
-      shouldInstall && await installDeps(options, distDir);
+async function create(projectName = "swagger-mock-server", options) {
+  try {
+    log.slog(
+      " info ",
+      "will create project '" +
+      projectName + "'"
+    );
 
-      log.slog(" Done ", "create project '" + projectName + "' succeed!");
+    const distDir = path.join(process.cwd(), projectName);
+    if (fs.existsSync(distDir)) {
+      await clean(distDir);
+      log.slog(" info ", `dir '${projectName}' has already exists, now delete it`);
+    }
+    fs.mkdirSync(distDir);
 
+    const sourceDir = path.join(root, "template");
+
+    // log.slog(
+    //   " info ",
+    //   "template path is: " + sourceDir + ", and will copy to " + distDir
+    // );
+
+    if (!fs.existsSync(sourceDir)) {
+      throw new Error("source dir must be existed");
+    }
+
+    if (Object.keys(options.customConfig).length) {
+       const packageJsonPath = path.join(sourceDir, 'package.json')
+       const packageJson = require(packageJsonPath)
+       packageJson.customConfig = options.customConfig
+       fs.writeFileSync(packageJsonPath, packageJson)
+       log.slog(' info ', 'write custom config to package')
+    }
+
+    await fs.copy(sourceDir, distDir);
+
+    // log.slog(" info ", "copy template to distDir success!");
+    const shouldInstall = options.install !== 'false'
+    shouldInstall && await installDeps(options, distDir);
+
+    log.slog(" Done ", "create project '" + projectName + "' succeed!");
+
+    if (!options.notNeedExit) {
       console.log('\ntips:')
       console.log('          cd ' + projectName)
       !shouldInstall && console.log('          npm install')
       console.log('          npm start')
-
+  
       process.exit(0);
-    } catch (e) {
-      log.elog(' error ', e.message)
-      process.exit(1)
     }
-  })();
+  } catch (e) {
+    log.elog(' error ', e.message)
+    process.exit(1)
+  }
 }
 
 async function installDeps(options, cwd = process.cwd()) {

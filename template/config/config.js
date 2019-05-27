@@ -4,8 +4,8 @@ const {
 
 module.exports = {
   // baseUrl: '/api/v1',
-  docFilename: resolve(__dirname, "..", "specs/demo/swagger.json"),
-  validateDoc: false,
+  // docFilename: resolve(__dirname, "..", "specs/demo/swagger.json"),
+  // validateDoc: false,
   // validateRequest: false,
   // validateResponse: false,
   // proxy: {
