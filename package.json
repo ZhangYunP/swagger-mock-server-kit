@@ -1,6 +1,6 @@
 {
   "name": "swagger-mock-server-kit",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "this is module that create a mock server by swagger doc",
   "keywords": [
     "swagger",
