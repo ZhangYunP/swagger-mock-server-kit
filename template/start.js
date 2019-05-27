@@ -1,10 +1,17 @@
 const express = require("express");
-const config = require("./config");
+const path = require('path')
+const fs = require('fs')
+let config = require("./config");
 const {
   formatConfig,
   error: elog,
   notFoundFile
 } = require("./lib/utils");
+
+const customConfigPath = path.resolve(process.cwd(), '..', 'config/app.config.js')
+const customConfig = fs.existsSync(customConfigPath) ? require(customConfigPath).mockServer: {}
+
+config = Object.assign(config, customConfig)
 
 const app = express()
 

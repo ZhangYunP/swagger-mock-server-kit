@@ -39,14 +39,6 @@ async function create(projectName = "swagger-mock-server", options) {
       throw new Error("source dir must be existed");
     }
 
-    if (Object.keys(options.customConfig).length) {
-       const packageJsonPath = path.join(sourceDir, 'package.json')
-       const packageJson = require(packageJsonPath)
-       packageJson.customConfig = options.customConfig
-       fs.writeFileSync(packageJsonPath, packageJson)
-       log.slog(' info ', 'write custom config to package')
-    }
-
     await fs.copy(sourceDir, distDir);
 
     // log.slog(" info ", "copy template to distDir success!");
