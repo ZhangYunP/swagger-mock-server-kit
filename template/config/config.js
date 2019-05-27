@@ -2,11 +2,9 @@ const {
   resolve
 } = require("path");
 
-const appRoot = resolve(__dirname, "..");
-
 module.exports = {
   // baseUrl: '/api/v1',
-  docFilename: resolve(appRoot, "specs/demo/swagger.json"),
+  docFilename: resolve(__dirname, "..", "specs/demo/swagger.json"),
   validateDoc: false,
   // validateRequest: false,
   // validateResponse: false,
