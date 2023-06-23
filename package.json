@@ -15,7 +15,7 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "commander": "^2.20.0",
-    "cross-spawn": "^6.0.5",
+    "cross-spawn": "^7.0.3",
     "fs-extra": "^7.0.1",
     "ora": "^3.4.0",
     "rimraf": "^2.6.3"
